@@ -8,7 +8,7 @@ input[type=text],input[type=password],select,textarea{border:1px solid #000;outl
 input[type=submit]{font-size:0.7em;vertical-align:middle;}
 table th,.subtitulo{border-top:thin solid #F0F0F0;border:thin solid #c0c0c0;background-color:#eee;text-align:center;}
 .subtitulo {margin:1px 0;}
-h1,h2,h3{margin:0;padding:0;}
+h1,h2,h3{margin:1em 0 0 0;padding:0;}
 h1{display:block;background-color:#E1E1E1;color:#000;font-size:100%;text-align:center;padding:0 5px;}
 blockquote{color: #331C01;font-family: Georgia, 'Times New Roman', serif;font-size: 14px;font-style: italic; font-variant: normal;font-weight: normal;margin-bottom: 14px;padding-right: 27px;text-align:justify;}
 h2{display:block;-moz-border-radius:5px;-webkit-border-radius:5px;background-color:#FFFDBC;color:#000;font-size:90%;text-align:center;padding:5px;}
@@ -118,5 +118,8 @@ a:hover{color:#50f;border:none;}
 
 #formulario_inicio {width:160px;margin:auto;}
 
-#portada *{font-size:0.9em !important;}
 .encuesta *{font-size:0.95em !important;}
+
+.historia-fecha{width:61px;font-size:0.6em;}
+.historia-por{width:61px;font-size:0.6em;}
+.historia-nota{widows:*;font-size:0.6em;}

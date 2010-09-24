@@ -11,7 +11,7 @@ switch (_F_usuario_cache('nivel'))
     case _N_administrador_us:
     case _N_administrador_sv:
         mostrar_recordatorios();
-        mostrar_notas();
+        portada_mostrar_notas();
         break;
     case _N_agente_us:
         echo '<p><span style="font-weight:bold;">Instrucciones rápidas</span></p><p>Para ver todas las aplicaciones (libres y suyas) ir a Menú -> Aplicaciones.<br /><p>Para ver las aplicaciones libres ir a Menú -> Aplicaciones libres.<br /><b style="color:#F00;">Para ver las aplicaciones que he tomado ir a Menú -> <a href="'.PROY_URL.'aplicaciones?asignadas">Mis aplicaciones</a>.</b></p>';
@@ -50,27 +50,56 @@ function mostrar_recordatorios()
     }
 }
 
-function mostrar_notas()
+/*
+portada_mostrar_notas(VOID)
+    Muestra las últimas notas ingresadas por aplicación
+ */
+function portada_mostrar_notas()
 {
-    echo '<h1>Ultimas notas</h1>';
+    /*
+        Alcance: Portada
+        Permisos: Iniciados
+        Logica:
+        * Mostrar las aplicaciones a las que se les halla ingresado una nota recientemente.
+        * Maximo 3 días anteriores
+    */
 
-    if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us,_N_agente_us_solo)))
-        $where = 'AND (pa.`ID_agente_sv` = '._F_usuario_cache('ID_usuario').' OR pa.`ID_agente_us` = '._F_usuario_cache('ID_usuario').')';
+    echo '<h1>Aplicaciones con notas en los últimos 3 días</h1>';
+
+    if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us,_N_agente_us_solo)) || isset($_GET['forzar_agente_sv']))
+        $where = 'AND ID_usuario = '._F_usuario_cache('ID_usuario');
     else
         $where = '';
 
-    $c = sprintf('SELECT `ID_prospecto`, `apellido`, `nombre`, `direccion1`, `direccion2`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, `ID_historia`, DATE_FORMAT(fecha,"%%e-%%b-%%Y<br />%%r") AS "fecha_formato", `cambio`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = h.`ID_usuario`) AS nombre_usuario FROM (%s AS h LEFT JOIN %s AS pa USING (ID_aplicacion)) LEFT JOIN %s USING (ID_prospecto) WHERE 1 '.$where.' ORDER BY `fecha` DESC LIMIT 40', db_prefijo.'historial', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos');
-    $r = db_consultar($c);
 
-    if (mysql_num_rows($r))
+    /**************/
+    // MySQL
+    // Encontrar las aplicaciones que tengan notas en los ultimos 3 días, por orden de aplicacion con nota mas reciente
+    $cA3dias = 'SELECT `ID_aplicacion`, nombre, apellido, direccion2 FROM '.db_prefijo.'historial LEFT JOIN '.db_prefijo.'prospectos_aplicados USING(ID_aplicacion) LEFT JOIN '.db_prefijo.'prospectos USING(ID_prospecto) WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) '.$where.' GROUP BY `ID_aplicacion` ORDER BY `fecha` DESC';
+    $rA3dias = db_consultar($cA3dias);
+
+    //,'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'">ver</a>'
+
+    if (mysql_num_rows($rA3dias))
     {
-        echo '<table class="tabla-estandar cebra">';
-        echo '<tr><th>Fecha y hora<acronym title="Fecha para la cúal se anexó la nota">*</acronym></th><th>ID aplicación</th><th>Anotado por</th><th>Aplicación</th><th>Anotación</th><th>Acción</th></tr>';
-        while ($f = mysql_fetch_assoc($r))
+        while ($fA3Dias = mysql_fetch_assoc($rA3dias))
         {
-            echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $f['fecha_formato'], $f['ID_aplicacion'], $f['nombre_usuario'], $f['apellido'].', '.$f['nombre'],$f['cambio'],'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'">ver</a>');
+            // Mostrar que aplicación es.
+            echo '<table style="table-layout:fixed;" class="tabla-estandar">';
+            echo '<tr><th><a href="'.PROY_URL.'aplicaciones?a='.$fA3Dias['ID_aplicacion'].'">ver aplicación</a></th><th>'.$fA3Dias['apellido'].', '.$fA3Dias['nombre']. '</th><th>'.$fA3Dias['direccion2'].'</th></tr>';
+            echo '</table>';
+            // Sacar todas las notas de esas aplicaciones
+            $cHistoria = sprintf('SELECT DATE_FORMAT(fecha,"%%e-%%b-%%Y<br />%%r") AS "fecha_formato", (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = h.`ID_usuario`) AS nombre_usuario, `cambio` FROM '.db_prefijo.'historial AS h WHERE ID_aplicacion='.$fA3Dias['ID_aplicacion']);
+            $rHistoria = db_consultar($cHistoria);
+
+            echo '<table class="tabla-estandar cebra">';
+            echo '<tr><th>Fecha</th><th>Usuario</th><th>Anotación</th></tr>';
+            while ($fHistoria = mysql_fetch_assoc($rHistoria))
+            {
+                echo sprintf('<tr><td class="historia-fecha">%s</td><td class="historia-por">%s</td><td class="historia-nota">%s</td></tr>',$fHistoria['fecha_formato'],$fHistoria['nombre_usuario'],$fHistoria['cambio']);
+            }
+            echo '</table><hr style="border:1px solid #F00;"/>';
         }
-        echo '</table>';
     }
     else
     {
