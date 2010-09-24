@@ -176,7 +176,7 @@ db_actualizar_datos(db_prefijo.'prospectos',array('ultima_presentacion' => mysql
 
 
 // Obtengamos los recordatorios de esta hora...
-$c = 'SELECT `ID_recordatorio`, `ID_usuario`, `ID_prospecto`, `fecha`, `nota`, `nombre`, `apellido` FROM `'.db_prefijo.'recordatorio` LEFT JOIN `'.db_prefijo.'prospectos` USING(ID_prospecto) WHERE ID_usuario='._F_usuario_cache('ID_usuario').' AND DATE(`fecha`)=DATE(NOW()) AND HOUR(`fecha`)=HOUR(NOW()) AND MINUTE(NOW()) BETWEEN (MINUTE(`fecha`)-20) AND  (MINUTE(`fecha`)+60)';
+$c = 'SELECT `ID_recordatorio`, `ID_usuario`, `ID_prospecto`, `fecha`, `nota`, `nombre`, `apellido` FROM `'.db_prefijo.'recordatorio` LEFT JOIN `'.db_prefijo.'prospectos` USING(ID_prospecto) WHERE ID_usuario='._F_usuario_cache('ID_usuario').' AND ( `fecha` < (NOW() + INTERVAL 30 MINUTE) )';
 $rr = db_consultar($c);
 
 if (mysql_num_rows($rr))
