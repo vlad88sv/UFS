@@ -41,7 +41,7 @@ a:hover{color:#50f;border:none;}
 #header #telefonos>img{width:52px;height:23px;}
 #header #telefonos>p{margin:0;}
 
-#menu_superior{border-spacing:0;border-collapse:collapse;line-height:29px;height:29px;}
+#menu_superior{border-spacing:0;border-collapse:collapse;line-height:29px;height:29px;border-top:1px solid #CCC;border-bottom:1px solid #CCC;margin-bottom:5px;}
 #menu_superior:after{clear:both;}
 .dropdown, .dropdown li, .dropdown ul{list-style:none;margin:0;padding:0;}
 .dropdown{z-index:597;background-color:#E1E1E1;font-size:0.9em;width:780px;line-height:29px;height:29px;}
