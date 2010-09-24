@@ -75,7 +75,7 @@ function portada_mostrar_notas()
     /**************/
     // MySQL
     // Encontrar las aplicaciones que tengan notas en los ultimos 3 días, por orden de aplicacion con nota mas reciente
-    $cA3dias = 'SELECT `ID_aplicacion`, nombre, apellido, direccion2 FROM '.db_prefijo.'historial LEFT JOIN '.db_prefijo.'prospectos_aplicados USING(ID_aplicacion) LEFT JOIN '.db_prefijo.'prospectos USING(ID_prospecto) WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) '.$where.' GROUP BY `ID_aplicacion` ORDER BY `fecha` DESC';
+    $cA3dias = 'SELECT `ID_aplicacion`, nombre, apellido, direccion2 FROM '.db_prefijo.'historial LEFT JOIN '.db_prefijo.'prospectos_aplicados USING(ID_aplicacion) LEFT JOIN '.db_prefijo.'prospectos USING(ID_prospecto) WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) '.$where.' GROUP BY `ID_aplicacion` ORDER BY MAX(`fecha`) DESC';
     $rA3dias = db_consultar($cA3dias);
 
     //,'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'">ver</a>'
