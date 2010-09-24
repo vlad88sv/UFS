@@ -1,0 +1,37 @@
+<ifModule mod_gzip.c>
+  mod_gzip_on Yes
+  mod_gzip_dechunk Yes
+</ifModule>
+<ifModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 2 year"
+</ifModule>
+<ifModule mod_headers.c>
+    Header set Cache-Control "private"
+    Header unset Last-Modified
+    Header unset ETag
+</ifModule>
+FileETag None
+
+RewriteEngine on
+Options +FollowSymLinks
+
+RewriteBase /
+
+RewriteRule ^(.*\.(css|js))$ /obgz.php?archivo=$1 [L,NC]
+RewriteRule ^(inicio|final|buscar|prospecto|aplicaciones|estadisticas|recordatorios|usuarios)$ index.php?peticion=$1&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_grupo$ index.php?peticion=aplicaciones&grupo&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_agente_(sv|us)_([0-9]+)$ index.php?peticion=aplicaciones&a$1=$2&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_agente_(sv|us)_validas_([0-9]+)$ index.php?peticion=aplicaciones&validas&a$1=$2&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_vigiladas$ index.php?peticion=aplicaciones&vigiladas&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_validas$ index.php?peticion=aplicaciones&validas&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_asignadas$ index.php?peticion=aplicaciones&asignadas&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_libres$ index.php?peticion=aplicaciones&pendientes&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_miniapp$ index.php?peticion=encuesta&%{QUERY_STRING} [L]
+RewriteRule ^FAQ$ index.php?peticion=faq&%{QUERY_STRING} [L]
+RewriteRule ^ajax$ ajax.php?%{QUERY_STRING} [L]
+
+RewriteCond %{REQUEST_URI} ^/image_([0-9]+)_([0-9]+)_([a-za-z0-9]{40})(\.jpg){0,1}$
+RewriteCond %{DOCUMENT_ROOT}/IMG/i/m/%1_%2_%3 -f [NC]
+RewriteRule ^image_([0-9]+)_([0-9]+)_([a-za-z0-9]{40}).*$ %{DOCUMENT_ROOT}/IMG/i/m/$1_$2_$3 [L]
+RewriteRule ^image_([0-9]+)_([0-9]+)_([a-za-z0-9]{40}).*$ imagen.php?tipo=normal&ancho=$1&alto=$2&sha1=$3 [L]
