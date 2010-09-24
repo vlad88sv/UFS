@@ -106,4 +106,8 @@ function HEAD_EXTRA()
     echo "\n";
 }
 
+function jQuery($script)
+{
+	return '<script type="text/javascript">$(function($) {'.$script.'});</script>';
+}
 ?>
