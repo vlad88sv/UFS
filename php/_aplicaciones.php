@@ -9,7 +9,9 @@ $arrCSS[] = 'css/jquery-ui/jquery-ui-1.8.4.custom';
 $arrJS[] = 'jquery.ui.core';
 $arrJS[] = 'jquery.ui.datepicker';
 
-if (isset($_POST['alertar_agente_us']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion'])):
+
+if (isset($_POST['alertar_agente_us']))
 {
     $correo = db_obtener(db_prefijo.'usuarios','correo','ID_usuario = (SELECT ID_agente_us FROM '.db_prefijo.'prospectos_aplicados WHERE ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'")');
 
@@ -27,7 +29,7 @@ if (isset($_POST['alertar_agente_us']) && isset($_POST['ID_prospecto']) && isset
     }
 }
 
-if (isset($_POST['enviar']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['enviar']))
 {
     if(isset($_POST['aplicacion_notas']))
     {
@@ -36,18 +38,18 @@ if (isset($_POST['enviar']) && isset($_POST['ID_prospecto']) && isset($_POST['ID
     enviar_prospecto($_POST['ID_aplicacion'],$_POST['ID_prospecto']);
 }
 
-if (isset($_POST['omitir_envio']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['omitir_envio']))
 {
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('enviado' => mysql_datetime()),'ID_aplicacion="'.$_POST['ID_aplicacion'].'"');
 }
 
-if (isset($_POST['eliminar']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['eliminar']))
 {
     $c = 'DELETE FROM '.db_prefijo.'prospectos_aplicados WHERE ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"';
     db_consultar($c);
 }
 
-if (isset($_POST['asignar']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['asignar']))
 {
     // FIXME: atomizar
     $test = db_obtener(db_prefijo.'prospectos_aplicados','ID_agente_us','ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
@@ -59,7 +61,7 @@ if (isset($_POST['asignar']) && isset($_POST['ID_prospecto']) && isset($_POST['I
     }
 }
 
-if (isset($_POST['aplicacion_valida']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['aplicacion_valida']))
 {
     $nota = 'La aplicación se ha considerado como válida. **POSIBLE NEGOCIO**';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'valida'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
@@ -69,7 +71,7 @@ if (isset($_POST['aplicacion_valida']) && isset($_POST['ID_prospecto']) && isset
         $_POST['anexar_nota'] = true;
 }
 
-if (isset($_POST['aplicacion_invalida']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['aplicacion_invalida']))
 {
     $nota = 'La aplicación se ha considerado como **INVALIDA**';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'invalida'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
@@ -79,7 +81,7 @@ if (isset($_POST['aplicacion_invalida']) && isset($_POST['ID_prospecto']) && iss
         $_POST['anexar_nota'] = true;
 }
 
-if (isset($_POST['aplicacion_imposible']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['aplicacion_imposible']))
 {
     $nota = 'La aplicación se ha considerado como **IMPOSIBLE** - El prospecto no califica para nuestros servicios';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'imposible'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
@@ -89,7 +91,7 @@ if (isset($_POST['aplicacion_imposible']) && isset($_POST['ID_prospecto']) && is
         $_POST['anexar_nota'] = true;
 }
 
-if (isset($_POST['aplicacion_vendida']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['aplicacion_vendida']))
 {
     $nota = '**La aplicación se ha vendido**';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'vendida'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
@@ -99,18 +101,18 @@ if (isset($_POST['aplicacion_vendida']) && isset($_POST['ID_prospecto']) && isse
         $_POST['anexar_nota'] = true;
 }
 
-if (isset($_POST['vigilar']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['vigilar']))
 {
     db_agregar_datos(db_prefijo.'prospectos_aplicados_vigilados',array('ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
 }
 
-if (isset($_POST['desvigilar']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['desvigilar']))
 {
     $c = 'DELETE FROM '.db_prefijo.'prospectos_aplicados_vigilados WHERE ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_usuario="'._F_usuario_cache('ID_usuario').'"';
     db_consultar($c);
 }
 
-if (isset($_POST['asignar_agente']) && isset($_POST['ID_agente_us']) && isset($_POST['ID_aplicacion']) && isset($_POST['ID_prospecto']))
+if (isset($_POST['asignar_agente']) && isset($_POST['ID_agente_us']))
 {
     $f = db_obtener_fila(db_prefijo.'usuarios','ID_usuario',$_POST['ID_agente_us']);
     $nota = 'Se ha asignado el agente UFS US <b>'.$f['nombre'].'</b> a esta aplicación';
@@ -123,7 +125,7 @@ if (isset($_POST['asignar_agente']) && isset($_POST['ID_agente_us']) && isset($_
     //TODO: enviar mensajito.us
 }
 
-if (isset($_POST['recordatorio']) && isset($_POST['notas']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['recordatorio']) && isset($_POST['notas']))
 {
     $fecha = date('Y-m-d',strtotime(str_replace('/', '-', $_POST['fecha']))).' '.$_POST['hora'];
     $nota = "Recordatorio establecido para $fecha";
@@ -137,10 +139,12 @@ if (isset($_POST['recordatorio']) && isset($_POST['notas']) && isset($_POST['ID_
         $_POST['anexar_nota'] = true;
 }
 
-if (isset($_POST['anexar_nota']) && !empty($_POST['notas']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+if (isset($_POST['anexar_nota']) && !empty($_POST['notas']))
 {
     db_agregar_datos(db_prefijo.'historial',array('fecha' => mysql_datetime(), 'cambio' => $_POST['notas'], 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
 }
+
+endif; // IF ID_prospecto+ID_aplicacion
 
 $buffer = '';
 $total = $comision = $i = 0;
