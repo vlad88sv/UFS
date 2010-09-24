@@ -9,6 +9,24 @@ $arrCSS[] = 'css/jquery-ui/jquery-ui-1.8.4.custom';
 $arrJS[] = 'jquery.ui.core';
 $arrJS[] = 'jquery.ui.datepicker';
 
+if (isset($_POST['alertar_agente_us']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
+{
+    $correo = db_obtener(db_prefijo.'usuarios','correo','ID_usuario = (SELECT ID_agente_us FROM '.db_prefijo.'prospectos_aplicados WHERE ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'")');
+
+    if ($correo)
+    {
+        $nota = 'Se ha enviado una notificación al agente US sobre este caso';
+        db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+        $mensaje='<p>Por favor revisar la siguiente aplicación:<br /><a href="'.PROY_URL.'aplicaciones?a='.$_POST['ID_aplicacion'].'">ir a aplicación</a></p><p>Es posible que tenga nuevas notas anexas o que un administrador solicite tu atención sobre esta aplicación</p>';
+        correoSMTP($correo,'#'.time().' - Atención sobre aplicación con ID. '.$_POST['ID_aplicacion'],$mensaje,true);
+        echo jQuery('alert("Alerta enviada exitosamente a '.$correo.'.");');
+    }
+    else
+    {
+        echo jQuery('alert("No hay agente US asignado a este caso o el asignado no posee correo electrónico");');
+    }
+}
+
 if (isset($_POST['enviar']) && isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion']))
 {
     if(isset($_POST['aplicacion_notas']))
@@ -350,12 +368,24 @@ while($f = mysql_fetch_assoc($r))
             }
         }
 
-        // Si es administrador de la USA puede asignar agente_us para el caso.
+        /**********************************************************************/
+        /*
+            Control de agentes US
+            Permisos:sus+ssv
+            Logica:
+                Permitir asignar o cambiar un agente US para llevar la aplicación.
+                Ofrecer un medio por el cual alertar al agente US de que la aplicación ha cambiado y necesita su atención
+        */
         if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us)))
         {
             $ops = db_ui_opciones('ID_usuario','nombre',db_prefijo.'usuarios','WHERE nivel="'._N_agente_us.'"','ORDER BY nombre ASC');
-            $buffer .= '<hr /><div style="background-color:#EEE;font-size:0.8em;text-align:center;">Asignar o cambiar agente US para esta aplicación</div>'.ui_combobox('ID_agente_us',$ops).'<input name="asignar_agente" type="submit" value="Asignar" />';
+            $buffer .= '<hr />';
+            $buffer .= '<div style="background-color:#EEE;font-size:0.8em;text-align:center;">Operaciones con agente US</div>';
+            $buffer .= 'Asignar o cambiar agente US '.ui_combobox('ID_agente_us',$ops).'<input name="asignar_agente" type="submit" value="Asignar" />';
+            $buffer .= '<input style="float:right;" name="alertar_agente_us" type="submit" value="Alertar agente US actual sobre esta aplicación" />';
         }
+        /**********************************************************************/
+
     }
     $buffer .= '</div>';
     $buffer .= '</form>';
