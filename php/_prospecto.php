@@ -157,7 +157,7 @@ else
     header('Location: '.PROY_URL_ACTUAL);
 }
 
-$c = 'SELECT `ID_prospecto`, `situacion`, IF(`ultima_presentacion`,`ultima_presentacion`,"Nunca") AS "ultima_presentacion", `intentos`, `apellido`, `nombre`, `direccion1`, `direccion2`, `especial1`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial4`, `especial5`, `especial6`, `especial7`, `especial8`, `especial9`, `especial10`, `especial11`, `especial13`, `especial14`, `especial15`, `especial16`, `especial17`, `especial18`, `especial19`, `especial20`, `especial21`, `interes` FROM `'.db_prefijo.'prospectos` WHERE '.$WHERE;
+$c = 'SELECT `ID_prospecto`, `situacion`, IF(`ultima_presentacion`,`ultima_presentacion`,"Nunca") AS "ultima_presentacion", `intentos`, `apellido`, `nombre`, `direccion1`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `interes` FROM `'.db_prefijo.'prospectos` WHERE '.$WHERE;
 $r = db_consultar($c);
 
 if (!mysql_num_rows($r))
