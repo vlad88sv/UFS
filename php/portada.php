@@ -16,12 +16,12 @@ switch (_F_usuario_cache('nivel'))
     case _N_agente_us:
         echo '<p><span style="font-weight:bold;">Instrucciones rápidas</span></p><p>Para ver todas las aplicaciones (libres y suyas) ir a Menú -> Aplicaciones.<br /><p>Para ver las aplicaciones libres ir a Menú -> Aplicaciones libres.<br /><b style="color:#F00;">Para ver las aplicaciones que he tomado ir a Menú -> <a href="'.PROY_URL.'aplicaciones?asignadas">Mis aplicaciones</a>.</b></p>';
         mostrar_recordatorios();
-        mostrar_notas();
+        portada_mostrar_notas();
         break;
     case _N_agente_sv:
         echo '<p><span style="font-weight:bold;">Instrucciones rápidas</span></p><p>Para obtener un nuevo prospecto ir a Menú -> Prospecto.<br />Para ver las aplicaciones tomadas ir a Menú -> Aplicaciones.</p>';
         mostrar_recordatorios();
-        mostrar_notas();
+        portada_mostrar_notas();
         break;
 }
 
