@@ -11,6 +11,11 @@ $arrJS[] = 'jquery.ui.datepicker';
 
 if (isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion'])):
 
+if (isset($_POST['asignar_bono_agente_sv']) && _F_usuario_cache('nivel') == _N_administrador_sv)
+{
+    db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('bono_agente_sv' => (isset($_POST['bono_agente_sv']) ? '1' : '0')),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
+}
+
 if (isset($_POST['alertar_agente_us']))
 {
     $correo = db_obtener(db_prefijo.'usuarios','correo','ID_usuario = (SELECT ID_agente_us FROM '.db_prefijo.'prospectos_aplicados WHERE ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'")');
@@ -219,7 +224,7 @@ switch (_F_usuario_cache('nivel'))
         break;
 }
 
-$c = 'SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`,  `especial5`, `especial6`, `especial7`, pa.`ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT local FROM '.db_prefijo.'supervisores WHERE ID_supervisor = (SELECT ID_supervisor FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`)) AS grupo, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, DATE_FORMAT(`fecha_ingresada`,"%e-%b-%Y<br />%r") AS "fecha_ingresada_formato", DATE_FORMAT(`fecha_aceptada`,"%e-%b-%Y<br />%r") AS "fecha_aceptada", DATE_FORMAT(`fecha_cerrada`,"%e-%b-%Y<br />%r") AS "fecha_cerrada", `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, IF(pav.`ID`, "si", "no") AS "vigilado", pa.`aplicacion_valida` FROM ('.db_prefijo.'prospectos_aplicados AS pa LEFT JOIN '.db_prefijo.'prospectos_aplicados_vigilados AS pav ON pav.ID_usuario='._F_usuario_cache('ID_usuario').' AND pav.`ID_aplicacion`=pa.`ID_aplicacion`) LEFT JOIN '.db_prefijo.'prospectos USING (ID_prospecto) WHERE 1 '.$WHERE.' ORDER BY `fecha_ingresada` ASC';
+$c = 'SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`,  `especial5`, `especial6`, `especial7`, pa.`ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT local FROM '.db_prefijo.'supervisores WHERE ID_supervisor = (SELECT ID_supervisor FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`)) AS grupo, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, DATE_FORMAT(`fecha_ingresada`,"%e-%b-%Y<br />%r") AS "fecha_ingresada_formato", DATE_FORMAT(`fecha_aceptada`,"%e-%b-%Y<br />%r") AS "fecha_aceptada", DATE_FORMAT(`fecha_cerrada`,"%e-%b-%Y<br />%r") AS "fecha_cerrada", `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, IF(pav.`ID`, "si", "no") AS "vigilado", pa.`aplicacion_valida`, pa.`bono_agente_sv` FROM ('.db_prefijo.'prospectos_aplicados AS pa LEFT JOIN '.db_prefijo.'prospectos_aplicados_vigilados AS pav ON pav.ID_usuario='._F_usuario_cache('ID_usuario').' AND pav.`ID_aplicacion`=pa.`ID_aplicacion`) LEFT JOIN '.db_prefijo.'prospectos USING (ID_prospecto) WHERE 1 '.$WHERE.' ORDER BY `fecha_ingresada` ASC';
 $r = db_consultar($c);
 
 if (isset($_POST['lote']))
@@ -387,6 +392,25 @@ while($f = mysql_fetch_assoc($r))
             $buffer .= '<div style="background-color:#EEE;font-size:0.8em;text-align:center;">Operaciones con agente US</div>';
             $buffer .= 'Asignar o cambiar agente US '.ui_combobox('ID_agente_us',$ops).'<input name="asignar_agente" type="submit" value="Asignar" />';
             $buffer .= '<input style="float:right;" name="alertar_agente_us" type="submit" value="Alertar agente US actual sobre esta aplicación" />';
+        }
+        /**********************************************************************/
+
+        /**********************************************************************/
+        /*
+            Control de agentes SV
+            Permisos:ssv+asv
+            Logica:
+                Permitir marcar si el agente SV recibió ya bono por esta aplicación.
+                Permitirle al agente SV conocer si ya recibió su bono pero no poder cambiar el estado.
+        */
+        if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_agente_sv)))
+        {
+            $ops = db_ui_opciones('ID_usuario','nombre',db_prefijo.'usuarios','WHERE nivel="'._N_agente_us.'"','ORDER BY nombre ASC');
+            $buffer .= '<hr />';
+            $buffer .= '<div style="background-color:#EEE;font-size:0.8em;text-align:center;">Operaciones con agente SV</div>';
+            $buffer .= 'El agente ha recibido bono de esta aplicación '.ui_input('bono_agente_sv','1','checkbox','','',($f['bono_agente_sv'] ? 'checked="checked"' : ''));
+            if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv)))
+                $buffer .= '<input name="asignar_bono_agente_sv" type="submit" value="Guardar" />';
         }
         /**********************************************************************/
 
