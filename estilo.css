@@ -60,7 +60,7 @@ a:hover{color:#50f;border:none;}
 .dropdown ul li.dir{padding:5px 15px;}
 .dropdown ul a, .dropdown ul span{padding-left:15px;}
 .dropdown .btnlnk{padding:0px;}
-.dropdown>li{border-left:4px solid #FFFFFF;white-space:nowrap;}
+.dropdown>li{border-left:4px solid #EEE;white-space:nowrap;}
 .dropdown>li.ultimo{border-right:4px solid #FFFFFF;}
 .dropdown li.hover, .dropdown li:hover, .lidestacado{background-color:#9F9F9F;background-image:url('img/menu2.png');background-repeat:repeat-x;color:#FFF;}
 .lidestacado{font-weight:bolder;}
