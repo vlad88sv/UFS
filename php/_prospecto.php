@@ -157,7 +157,7 @@ else
     header('Location: '.PROY_URL_ACTUAL);
 }
 
-$c = 'SELECT `ID_prospecto`, `situacion`, IF(`ultima_presentacion`,`ultima_presentacion`,"Nunca") AS "ultima_presentacion", `intentos`, `apellido`, `nombre`, `direccion1`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `interes` FROM `'.db_prefijo.'prospectos` WHERE '.$WHERE;
+$c = 'SELECT `ID_prospecto`, `situacion`, IF(`ultima_presentacion`,`ultima_presentacion`,"Nunca") AS "ultima_presentacion", `intentos`, `apellido`, `nombre`, `direccion1`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `interes`, `tipo` FROM `'.db_prefijo.'prospectos` WHERE '.$WHERE;
 $r = db_consultar($c);
 
 if (!mysql_num_rows($r))
@@ -207,6 +207,10 @@ if (mysql_num_rows($rr))
     echo '</table><hr style="border:1px solid #F00;"/>';
 }
 
+if ($f['tipo'] == 'debt')
+{
+    echo '<div style="text-align:center;background-color:#000;color:#F00;">ESTE PROSPECTO ES PARA DEBT SETTLEMENT</div>';
+}
 ?>
 <form action="<?php echo PROY_URL_ACTUAL; ?>" method="post">
     <input type="hidden" name="ID_prospecto" value="<?php echo $f['ID_prospecto']; ?>" />
@@ -236,6 +240,7 @@ if (mysql_num_rows($rr))
             <td><?php echo $f['estado'] , ' / ', $f['ciudad'] , ' / ' , $f['zip']; ?></td>
         </tr>
 
+        <?php if ($f['tipo'] == 'full'): ?>
         <tr>
             <th>Mortage date</th><th>Mortage Amount</th>
         </tr>
@@ -251,6 +256,7 @@ if (mysql_num_rows($rr))
             <td><?php echo $f['especial6']; ?></td>
             <td><?php echo $f['interes'] . '% / ' . $f['especial7']; ?></td>
         </tr>
+        <?php endif; ?>
     </table>
 
     <?php if (1 || $f['situacion'] == 'nuevo'): ?>
