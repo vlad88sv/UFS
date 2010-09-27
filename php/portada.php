@@ -30,8 +30,8 @@ echo '</div>';
 
 function mostrar_recordatorios()
 {
-    echo '<h1>Recordatorios</h1>';
-    $c = sprintf('SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion1`, `direccion2`, `especial1`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial4`, `especial5`, `especial6`, `especial7`, `especial8`, `especial9`, `especial10`, `especial11`, `especial13`, `especial14`, `especial15`, `especial16`, `especial17`, `especial18`, `especial19`, `especial20`, `especial21`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, `fecha_ingresada`, `fecha_aceptada`, `fecha_cerrada`, `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, `ID_recordatorio`, `ID_usuario`, `ID_aplicacion`, DATE_FORMAT(fecha,"%%e-%%b-%%Y<br />%%r") AS "fecha", `nota`, `fecha_visto` FROM %s LEFT JOIN %s USING (ID_prospecto) LEFT JOIN %s USING (ID_aplicacion) WHERE fecha_visto="0000-00-00 00:00:00" AND ID_usuario=%s ORDER BY `fecha` ASC', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos', db_prefijo.'prospectos_aplicados_recordatorio', _F_usuario_cache('ID_usuario'));
+    echo '<h1>Recordatorios pendientes de aplicación</h1>';
+    $c = sprintf('SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, `fecha_ingresada`, `fecha_aceptada`, `fecha_cerrada`, `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, `ID_recordatorio`, `ID_usuario`, `ID_aplicacion`, DATE_FORMAT(fecha,"%%e-%%b-%%Y<br />%%r") AS "fecha_formato", `nota`, `fecha_visto` FROM %s LEFT JOIN %s USING (ID_prospecto) LEFT JOIN %s USING (ID_aplicacion) WHERE fecha_visto="0000-00-00 00:00:00" AND ID_usuario=%s ORDER BY `fecha` ASC', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos', db_prefijo.'prospectos_aplicados_recordatorio', _F_usuario_cache('ID_usuario'));
     $r = db_consultar($c);
 
     if (mysql_num_rows($r))
@@ -40,7 +40,7 @@ function mostrar_recordatorios()
         echo '<tr><th>Fecha y hora<acronym title="Fecha para la cúal se estableció el recordatorio">*</acronym></th><th>Owner</th><th>Dirección</th><th>Acción</th></tr>';
         while ($f = mysql_fetch_assoc($r))
         {
-            echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $f['fecha'], $f['apellido'].', '.$f['nombre'],$f['direccion2'],'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'&r='.$f['ID_recordatorio'].'">ver</a>');
+            echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $f['fecha_formato'], $f['apellido'].', '.$f['nombre'],$f['direccion2'],'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'&r='.$f['ID_recordatorio'].'">ver</a>');
         }
         echo '</table>';
     }
@@ -75,7 +75,7 @@ function portada_mostrar_notas()
     /**************/
     // MySQL
     // Encontrar las aplicaciones que tengan notas en los ultimos 3 días, por orden de aplicacion con nota mas reciente
-    $cA3dias = 'SELECT `ID_aplicacion`, nombre, apellido, direccion2 FROM '.db_prefijo.'historial LEFT JOIN '.db_prefijo.'prospectos_aplicados USING(ID_aplicacion) LEFT JOIN '.db_prefijo.'prospectos USING(ID_prospecto) WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) '.$where.' GROUP BY `ID_aplicacion` ORDER BY MAX(`fecha`) DESC';
+    $cA3dias = 'SELECT `ID_aplicacion`, nombre, apellido, direccion2, DATE_FORMAT(fecha_ingresada,"%e-%b-%Y %r") AS fecha_ingresada_formato, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario=ID_agente_sv) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario=ID_agente_us) AS nombre_agente_us FROM '.db_prefijo.'historial LEFT JOIN '.db_prefijo.'prospectos_aplicados USING(ID_aplicacion) LEFT JOIN '.db_prefijo.'prospectos USING(ID_prospecto) WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) '.$where.' GROUP BY `ID_aplicacion` ORDER BY MAX(`fecha`) DESC';
     $rA3dias = db_consultar($cA3dias);
 
     //,'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'">ver</a>'
@@ -86,7 +86,10 @@ function portada_mostrar_notas()
         {
             // Mostrar que aplicación es.
             echo '<table style="table-layout:fixed;" class="tabla-estandar">';
-            echo '<tr><th><a href="'.PROY_URL.'aplicaciones?a='.$fA3Dias['ID_aplicacion'].'">ver aplicación</a></th><th>'.$fA3Dias['apellido'].', '.$fA3Dias['nombre']. '</th><th>'.$fA3Dias['direccion2'].'</th></tr>';
+            echo '<tr><th>Nombre del prospecto</th><th>Dirección del prospecto</th><th>Acción</th></tr>';
+            echo '<tr><td>'.$fA3Dias['apellido'].', '.$fA3Dias['nombre']. '</td><td>'.$fA3Dias['direccion2'].'</td><td><a href="'.PROY_URL.'aplicaciones?a='.$fA3Dias['ID_aplicacion'].'">Ver aplicación</a></td></tr>';
+            echo '<tr><th>Fecha que se ingresó la aplicación</th><th>Agente SV que ingresó el caso</th><th>Agente US que lleva el caso</th></tr>';
+            echo '<tr><td>'.$fA3Dias['fecha_ingresada_formato'].'</td><td>'.$fA3Dias['nombre_agente_sv']. '</td><td>'.$fA3Dias['nombre_agente_us'].'</td></tr>';
             echo '</table>';
             // Sacar todas las notas de esas aplicaciones
             $cHistoria = sprintf('SELECT DATE_FORMAT(fecha,"%%e-%%b-%%Y<br />%%r") AS "fecha_formato", (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = h.`ID_usuario`) AS nombre_usuario, `cambio` FROM '.db_prefijo.'historial AS h WHERE ID_aplicacion='.$fA3Dias['ID_aplicacion']);
@@ -98,7 +101,8 @@ function portada_mostrar_notas()
             {
                 echo sprintf('<tr><td class="historia-fecha">%s</td><td class="historia-por">%s</td><td class="historia-nota">%s</td></tr>',$fHistoria['fecha_formato'],$fHistoria['nombre_usuario'],$fHistoria['cambio']);
             }
-            echo '</table><hr style="border:1px solid #F00;"/>';
+            echo '</table>';
+            echo '<hr style="border:2px solid #F00;"/>';
         }
     }
     else

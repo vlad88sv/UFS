@@ -324,7 +324,7 @@ while($f = mysql_fetch_assoc($r))
     '.$bHistorial.'
     ';
 
-    $buffer .= '<hr style="border:1px solid #F00;"/>';
+    $buffer .= '<hr style="border:1px dotted #F00;"/>';
     $buffer .= '<form action="'.PROY_URL_ACTUAL_DINAMICA.'" method="post"><div class="unit">';
     $buffer .= '
     <input name="ID_aplicacion" value="'.$f['ID_aplicacion'].'" type="hidden"/>

@@ -241,7 +241,7 @@ if (mysql_num_rows($rr))
         </tr>
         <tr>
             <td><?php echo strftime('%e de %B de %Y', strtotime($f['especial2'])); ?></td>
-            <td style="font-weight:bold;"><?php echo '$', @number_format(preg_replace('/[^\d]/','',$f['especial5']),2,'.',','); ?></td>
+            <td style="color:#F00;"><?php echo '$', @number_format(preg_replace('/[^\d]/','',$f['especial5']),2,'.',','); ?></td>
         </tr>
 
         <tr>
