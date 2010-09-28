@@ -188,6 +188,9 @@ if(isset($_GET['asignadas']))
 if(isset($_GET['vigiladas']))
     $WHERE = 'AND pav.ID';
 
+if(isset($_GET['desactualizadas']))
+    $WHERE .= ' AND aplicacion_valida="desconocido" AND fecha_ingresada < (DATE(NOW()) - INTERVAL 3 DAY) AND pa.ID_aplicacion NOT IN (SELECT h.ID_aplicacion FROM '.db_prefijo.'historial AS h WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) )';
+
 if(isset($_GET['validas']))
     $WHERE .= ' AND aplicacion_valida="valida"';
 

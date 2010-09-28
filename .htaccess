@@ -25,6 +25,7 @@ RewriteRule ^aplicaciones_agente_(sv|us)_([0-9]+)$ index.php?peticion=aplicacion
 RewriteRule ^aplicaciones_agente_(sv|us)_validas_([0-9]+)$ index.php?peticion=aplicaciones&validas&a$1=$2&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_vigiladas$ index.php?peticion=aplicaciones&vigiladas&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_validas$ index.php?peticion=aplicaciones&validas&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_desactualizadas$ index.php?peticion=aplicaciones&desactualizadas&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_asignadas$ index.php?peticion=aplicaciones&asignadas&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_libres$ index.php?peticion=aplicaciones&pendientes&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_miniapp$ index.php?peticion=encuesta&%{QUERY_STRING} [L]

@@ -31,6 +31,7 @@ if (S_iniciado())
         <?php if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us))):?>
             <li><a href="<?php echo PROY_URL; ?>aplicaciones_grupo?fecha_ingresada=now" title="">Solo de mi grupo</a></li>
             <li><a href="<?php echo PROY_URL; ?>aplicaciones_vigiladas" title="">Vigiladas</a></li>
+            <li><a href="<?php echo PROY_URL; ?>aplicaciones_desactualizadas" title="">Desactualizadas</a></li>
         <?php endif; ?>
         <?php if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us,_N_agente_us))):?>
             <li><a href="<?php echo PROY_URL; ?>aplicaciones_libres?fecha_ingresada=now" title="">Sin tomar (libres)</a></li>
