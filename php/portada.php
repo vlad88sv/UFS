@@ -31,7 +31,7 @@ echo '</div>';
 function mostrar_recordatorios()
 {
     echo '<div class="subtitulo">Recordatorios pendientes de aplicación</div>';
-    $c = sprintf('SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, `fecha_ingresada`, `fecha_aceptada`, `fecha_cerrada`, `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, `ID_recordatorio`, `ID_usuario`, `ID_aplicacion`, DATE_FORMAT(fecha,"%%e-%%b-%%Y<br />%%r") AS "fecha_formato", `nota`, `fecha_visto` FROM %s LEFT JOIN %s USING (ID_prospecto) LEFT JOIN %s USING (ID_aplicacion) WHERE fecha_visto="0000-00-00 00:00:00" AND ID_usuario=%s ORDER BY `fecha` ASC', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos', db_prefijo.'prospectos_aplicados_recordatorio', _F_usuario_cache('ID_usuario'));
+    $c = sprintf('SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, `fecha_ingresada`, `fecha_aceptada`, `fecha_cerrada`, `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, `ID_recordatorio`, `ID_usuario`, `ID_aplicacion`, DATE_FORMAT(fecha,"%%e-%%b-%%Y %%r") AS "fecha_formato", `nota`, `fecha_visto` FROM %s LEFT JOIN %s USING (ID_prospecto) LEFT JOIN %s USING (ID_aplicacion) WHERE fecha_visto="0000-00-00 00:00:00" AND ID_usuario=%s ORDER BY `fecha` ASC', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos', db_prefijo.'prospectos_aplicados_recordatorio', _F_usuario_cache('ID_usuario'));
     $r = db_consultar($c);
 
     if (mysql_num_rows($r))
@@ -40,7 +40,7 @@ function mostrar_recordatorios()
         echo '<tr><th>Fecha y hora<acronym title="Fecha para la cúal se estableció el recordatorio">*</acronym></th><th>Owner</th><th>Dirección</th><th>Acción</th></tr>';
         while ($f = mysql_fetch_assoc($r))
         {
-            echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $f['fecha_formato'], $f['apellido'].', '.$f['nombre'],$f['direccion2'],'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'&r='.$f['ID_recordatorio'].'">ver</a>');
+            echo sprintf('<tr><td class="mini">%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $f['fecha_formato'], $f['apellido'].', '.$f['nombre'],$f['direccion2'],'<a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'&r='.$f['ID_recordatorio'].'">ver</a>');
         }
         echo '</table>';
     }
