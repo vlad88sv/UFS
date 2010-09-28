@@ -224,7 +224,7 @@ switch (_F_usuario_cache('nivel'))
         break;
 }
 
-$c = 'SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`,  `especial5`, `especial6`, `especial7`, pa.`ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT local FROM '.db_prefijo.'supervisores WHERE ID_supervisor = (SELECT ID_supervisor FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`)) AS grupo, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, DATE_FORMAT(`fecha_ingresada`,"%e-%b-%Y<br />%r") AS "fecha_ingresada_formato", DATE_FORMAT(`fecha_aceptada`,"%e-%b-%Y<br />%r") AS "fecha_aceptada", DATE_FORMAT(`fecha_cerrada`,"%e-%b-%Y<br />%r") AS "fecha_cerrada", `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, IF(pav.`ID`, "si", "no") AS "vigilado", pa.`aplicacion_valida`, pa.`bono_agente_sv` FROM ('.db_prefijo.'prospectos_aplicados AS pa LEFT JOIN '.db_prefijo.'prospectos_aplicados_vigilados AS pav ON pav.ID_usuario='._F_usuario_cache('ID_usuario').' AND pav.`ID_aplicacion`=pa.`ID_aplicacion`) LEFT JOIN '.db_prefijo.'prospectos USING (ID_prospecto) WHERE 1 '.$WHERE.' ORDER BY `fecha_ingresada` ASC';
+$c = 'SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`,  `especial5`, `especial6`, `especial7`, pa.`ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT local FROM '.db_prefijo.'supervisores WHERE ID_supervisor = (SELECT ID_supervisor FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`)) AS grupo, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, DATE_FORMAT(`fecha_ingresada`,"%e-%b-%Y<br />%r") AS "fecha_ingresada_formato", DATE_FORMAT(`fecha_aceptada`,"%e-%b-%Y<br />%r") AS "fecha_aceptada", DATE_FORMAT(`fecha_cerrada`,"%e-%b-%Y<br />%r") AS "fecha_cerrada", `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, IF(pav.`ID`, "si", "no") AS "vigilado", pa.`aplicacion_valida`, pa.`bono_agente_sv`, p.`tipo` FROM ('.db_prefijo.'prospectos_aplicados AS pa LEFT JOIN '.db_prefijo.'prospectos_aplicados_vigilados AS pav ON pav.ID_usuario='._F_usuario_cache('ID_usuario').' AND pav.`ID_aplicacion`=pa.`ID_aplicacion`) LEFT JOIN '.db_prefijo.'prospectos AS p USING (ID_prospecto) WHERE 1 '.$WHERE.' ORDER BY `fecha_ingresada` ASC';
 $r = db_consultar($c);
 
 if (isset($_POST['lote']))
@@ -306,6 +306,10 @@ while($f = mysql_fetch_assoc($r))
         <td>'.$f['zip'].'</td>
         <td>'.$f['ciudad'].'</td>
     </tr>
+    ';
+
+    if ($f['tipo'] == 'full')
+    $datos .= '
     <tr>
         <th>Mrtg date</th><th>Sales price</th><th>Mrtg Amt</th><th>Lender</th><th>Mrtg Rate</th>
     </tr>
@@ -325,6 +329,9 @@ while($f = mysql_fetch_assoc($r))
         .(in_array(_F_usuario_cache('nivel'),array(_N_administrador_sv,_N_administrador_us)) ? '<td colspan="5"><textarea style="width:100%;display:block;" name="aplicacion_notas">'.$f['notas'].'</textarea></td>' : '<td colspan="5">'.$f['notas'].'</td>').
     '
     </tr>
+    ';
+
+    $datos .= '
     </table>
     '.$bHistorial.'
     ';
