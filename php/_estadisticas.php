@@ -37,7 +37,7 @@ if (mysql_num_rows($r2))
     echo '</table>';
 }
 
-if (mysql_num_rows($r2))
+if (mysql_num_rows($r))
 {
     echo '<h2>Número de aplicaciones ingresadas por grupo (global)</h2>';
     echo '<table class="tabla-estandar">';
