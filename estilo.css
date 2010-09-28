@@ -7,7 +7,8 @@ body{background:#EAEAEA;font-family:Verdana, Helvetica,"Lucida Grande", Arial, s
 input[type=text],input[type=password],select,textarea{border:1px solid #000;outline-color:-moz-use-text-color;outline-style:none;outline-width:medium;padding:0;background-color:#FFF;font-weight:bolder;color:#000;}
 input[type=submit]{font-size:0.7em;vertical-align:middle;}
 table th,.subtitulo{border-top:thin solid #F0F0F0;border:thin solid #c0c0c0;background-color:#eee;text-align:center;}
-.subtitulo {margin:1px 0;color:#F00;}
+table th {background-image:url('img/th.png');background-repeat:repeat-x;}
+.subtitulo {margin:1px 0;color:#F00;background-image:url('img/subtitulo.png');background-repeat:repeat-x;}
 h1,h2,h3{margin:1em 0 0 0;padding:0;color:#F00;}
 h1{display:block;background-color:#E1E1E1;font-size:100%;text-align:center;padding:0 5px;}
 blockquote{color: #331C01;font-family: Georgia, 'Times New Roman', serif;font-size: 14px;font-style: italic; font-variant: normal;font-weight: normal;margin-bottom: 14px;padding-right: 27px;text-align:justify;}
@@ -60,7 +61,7 @@ a:hover{color:#50f;border:none;}
 .dropdown ul li.dir{padding:5px 15px;}
 .dropdown ul a, .dropdown ul span{padding-left:15px;}
 .dropdown .btnlnk{padding:0px;}
-.dropdown>li{border-left:4px solid #EEE;white-space:nowrap;}
+.dropdown>li{border-left:4px solid #F5F5F5;white-space:nowrap;}
 .dropdown>li.ultimo{border-right:4px solid #FFFFFF;}
 .dropdown li.hover, .dropdown li:hover, .lidestacado{background-color:#9F9F9F;background-image:url('img/menu2.png');background-repeat:repeat-x;color:#FFF;}
 .lidestacado{font-weight:bolder;}

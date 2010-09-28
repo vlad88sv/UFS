@@ -30,7 +30,7 @@ echo '</div>';
 
 function mostrar_recordatorios()
 {
-    echo '<h1>Recordatorios pendientes de aplicación</h1>';
+    echo '<div class="subtitulo">Recordatorios pendientes de aplicación</div>';
     $c = sprintf('SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, `fecha_ingresada`, `fecha_aceptada`, `fecha_cerrada`, `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, `ID_recordatorio`, `ID_usuario`, `ID_aplicacion`, DATE_FORMAT(fecha,"%%e-%%b-%%Y<br />%%r") AS "fecha_formato", `nota`, `fecha_visto` FROM %s LEFT JOIN %s USING (ID_prospecto) LEFT JOIN %s USING (ID_aplicacion) WHERE fecha_visto="0000-00-00 00:00:00" AND ID_usuario=%s ORDER BY `fecha` ASC', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos', db_prefijo.'prospectos_aplicados_recordatorio', _F_usuario_cache('ID_usuario'));
     $r = db_consultar($c);
 
@@ -64,7 +64,7 @@ function portada_mostrar_notas()
         * Maximo 3 días anteriores
     */
 
-    echo '<h1>Aplicaciones con notas en los últimos 3 días</h1>';
+    echo '<div class="subtitulo">Aplicaciones con notas en los últimos 3 días</div>';
 
     if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us,_N_agente_us_solo)) || isset($_GET['forzar_agente_sv']))
         $where = 'AND ID_usuario = '._F_usuario_cache('ID_usuario');
