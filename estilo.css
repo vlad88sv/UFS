@@ -20,18 +20,6 @@ img.bloque{display:block;}
 a{border:none;color:#00f;text-decoration:none;}
 a:hover{color:#50f;border:none;}
 
-.pme-form{border:none;margin:0;padding:0;}
-.pme-hr{border:0 solid;padding:0;margin:0;border-top-width:1px;height:1px;}
-.pme-main{border:#004d9c 1px solid;border-collapse:collapse;border-spacing:0;width:100%;}
-.pme-navigation{border:#004d9c 0 solid;border-collapse:collapse;border-spacing:0;width:100%;}
-.pme-navigation-0,.pme-navigation-1{white-space:nowrap;}
-.pme-header{border:#004d9c 1px solid;padding:4px;background:#CCC;}
-.pme-form a{border:none;padding:0;background:none;text-decoration:none;}
-.pme-key-0,.pme-value-0,.pme-help-0,.pme-navigation-0,.pme-cell-0,.pme-key-1,.pme-value-1,.pme-help-0,.pme-navigation-1,.pme-cell-1,.pme-sortinfo,td.pme-filter{border:#004d9c 1px solid;padding:3px;}
-.pme-buttons{text-align:left;}
-.pme-message{text-align:center;}
-.pme-stats{text-align:right;}
-
 #header{top:0px;padding:0px;margin:0px;background-color:#FFF;}
 #cabecera{width:100%;margin:0;border:0;padding:0;border-collapse:collapse;}
 #cabecera tr{margin:0;border:0;}
