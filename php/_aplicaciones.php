@@ -323,18 +323,18 @@ while($f = mysql_fetch_assoc($r))
         <td>'.$f['especial6'].'</td>
         <td>'.$f['interes'] . '% / ' . $f['especial7'].'</td>
     </tr>
+    ';
 
+    $datos .= '
     <tr>
-        <th colspan="5">Nota ingresada por el agente</th>
+    <th colspan="5">Nota ingresada por el agente</th>
     </tr>
     <tr>
     '
         .(in_array(_F_usuario_cache('nivel'),array(_N_administrador_sv,_N_administrador_us)) ? '<td colspan="5"><textarea style="width:100%;display:block;" name="aplicacion_notas">'.$f['notas'].'</textarea></td>' : '<td colspan="5">'.$f['notas'].'</td>').
     '
     </tr>
-    ';
-
-    $datos .= '
+    
     </table>
     '.$bHistorial.'
     ';
