@@ -97,7 +97,7 @@ if (isset($_POST['ID_prospecto']))
     if (isset($_POST['descartar']))
     {
         db_actualizar_datos(db_prefijo.'prospectos',array('situacion' => 'descartado'),'ID_prospecto='.$_POST['ID_prospecto']);
-        db_agregar_datos(db_prefijo.'notas',array('ID_prospecto' => $_POST['ID_prospecto'],  'ID_usuario' => _F_usuario_cache('ID_usuario'), 'nota' => $_POST['notas'], 'fecha' => mysql_datetime(), 'accion' => 'descartar'));
+        db_agregar_datos(db_prefijo.'notas',array('ID_prospecto' => $_POST['ID_prospecto'],  'ID_usuario' => _F_usuario_cache('ID_usuario'), 'nota' => $_POST['notas'], 'fecha' => mysql_datetime(), 'accion' => 'descartado'));
     }
 }
 
