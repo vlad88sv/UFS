@@ -336,11 +336,11 @@ while($f = mysql_fetch_assoc($r))
     <th colspan="5">Nota ingresada por el agente</th>
     </tr>
     <tr>
-    '
-        .(in_array(_F_usuario_cache('nivel'),array(_N_administrador_sv,_N_administrador_us)) ? '<td colspan="5"><textarea style="width:100%;display:block;" name="aplicacion_notas">'.$f['notas'].'</textarea></td>' : '<td colspan="5">'.$f['notas'].'</td>').
-    '
+    <td colspan="5" style="height:11em;">
+    <textarea style="width:100%;height:10em;display:block;" readonly="readonly" name="aplicacion_notas">'.$f['notas'].'</textarea>
+    </td>
     </tr>
-    
+
     </table>
     '.$bHistorial.'
     ';
@@ -352,16 +352,19 @@ while($f = mysql_fetch_assoc($r))
     <input name="ID_prospecto" value="'.$f['ID_prospecto'].'" type="hidden"/>
     ';
 
+    $vigilar = '';
     if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us)))
+    {
         if ($f['vigilado'] == 'no')
-            $vigilar = '<input style="float:right;" name="vigilar" type="submit" value="Establecer vigilancia" />';
+            $vigilar = '<input name="vigilar" type="submit" value="Establecer vigilancia" />';
         else
-            $vigilar = '<input style="float:right;" name="desvigilar" type="submit" value="Quitar vigilancia" />';
-    else
-        $vigilar = '';
+            $vigilar = '<input name="desvigilar" type="submit" value="Quitar vigilancia" />';
+    }
 
-    $mini_aplicacion = '<div style="float:right;">| <a target="_blank" href="'.PROY_URL.'aplicaciones_miniapp?p='.$f['ID_prospecto'].'">Ver aplicación preliminar</a></div>';
-    $buffer .= '<div class="mini">#'.$i.' - ID de aplicación: '.$f['ID_aplicacion'].' - ID de prospecto: '.$f['ID_prospecto'] .$mini_aplicacion.' '.$vigilar.'</div>';
+    if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
+    $mini_aplicacion = '<a target="_blank" href="'.PROY_URL.'aplicaciones_miniapp?p='.$f['ID_prospecto'].'&a='.$f['ID_aplicacion'].'">Ver aplicación preliminar</a>';
+    $buffer .= '<div class="mini">#'.$i.' - ID de aplicación: '.$f['ID_aplicacion'].' - ID de prospecto: '.$f['ID_prospecto'] . '<div style="float:right;">' . $vigilar .'&nbsp;' . $mini_aplicacion . '</div></div>';
+    endif;
     $buffer .= $datos;
     if (_F_usuario_cache('nivel') == _N_administrador_sv && $f['enviado'] == "0000-00-00 00:00:00" && empty($_GET['export']))
     {
@@ -383,7 +386,7 @@ while($f = mysql_fetch_assoc($r))
             <textarea name="notas" style="width:99%;margin:auto;display:block"></textarea>
             <input type="submit" name="anexar_nota" value="Anexar Nota" /> - o - <input type="submit" name="recordatorio" value="Anexar nota y establecer recordatorio" /> <span class="mini">Fecha:</span> <input name="fecha" class="datepicker" type="text" value="'.date('d/m/Y').'" /> <span class="mini">Hora:</span> <select name="hora"><option value="09:00:00">9:00a.m.</option><option value="09:30:00">09:30a.m.</option><option value="10:00:00">10:00a.m.</option><option value="10:30:00">10:30a.m.</option><option value="11:00:00">11:00a.m.</option><option value="11:30:00">11:30a.m.</option><option value="12:00:00">12:00p.m.</option><option value="12:30:00">12:30p.m.</option><option value="13:00:00" selected="selected">1:00p.m.</option><option value="13:30:00">1:30p.m.</option><option value="14:00:00">2:00p.m.</option><option value="14:30:00">2:30p.m.</option><option value="15:00:00">3:00p.m.</option><option value="15:30:00">3:30p.m.</option><option value="16:00:00">4:00p.m.</option><option value="16:30:00">4:30p.m.</option><option value="17:00:00">5:00p.m.</option><option value="17:30:00">5:30p.m.</option><option value="18:00:00">6:00p.m.</option><option value="18:30:00">6:30p.m.</option><option value="19:00:00">7:00p.m.</option></select>';
 
-            if (in_array(_F_usuario_cache('nivel'), array(_N_agente_us,_N_administrador_sv,_N_administrador_us)))
+            if (!isset($_GET['aplicaciones_mostrar_incrustada']) && in_array(_F_usuario_cache('nivel'), array(_N_agente_us,_N_administrador_sv,_N_administrador_us)))
             {
                 $buffer .= '<hr /><div style="background-color:#EEE;font-size:0.8em;text-align:center;">Control de aplicación</div>';
                 $buffer .= '<input type="submit" name="aplicacion_valida" value="Marcar como aplicación válida" title="Se logró hablar con el prospecto y estaba interesado realmente en nuestros servicios" />';
@@ -401,7 +404,7 @@ while($f = mysql_fetch_assoc($r))
                 Permitir asignar o cambiar un agente US para llevar la aplicación.
                 Ofrecer un medio por el cual alertar al agente US de que la aplicación ha cambiado y necesita su atención
         */
-        if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us)))
+        if (!isset($_GET['aplicaciones_mostrar_incrustada']) && in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us)))
         {
             $ops = db_ui_opciones('ID_usuario','nombre',db_prefijo.'usuarios','WHERE nivel="'._N_agente_us.'"','ORDER BY nombre ASC');
             $buffer .= '<hr />';
@@ -419,7 +422,7 @@ while($f = mysql_fetch_assoc($r))
                 Permitir marcar si el agente SV recibió ya bono por esta aplicación.
                 Permitirle al agente SV conocer si ya recibió su bono pero no poder cambiar el estado.
         */
-        if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_agente_sv)))
+        if (!isset($_GET['aplicaciones_mostrar_incrustada']) && in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_agente_sv)))
         {
             $ops = db_ui_opciones('ID_usuario','nombre',db_prefijo.'usuarios','WHERE nivel="'._N_agente_us.'"','ORDER BY nombre ASC');
             $buffer .= '<hr />';
@@ -435,6 +438,7 @@ while($f = mysql_fetch_assoc($r))
     $buffer .= '</form>';
 }
 
+if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
 echo "<h1>".PROY_NOMBRE_CORTO." - historial de aplicaciones</h1>";
 echo '<table id="tabla-ventas" class="tabla-estandar">';
 echo '<tr>
@@ -444,9 +448,11 @@ echo '<tr>
 <th>Aplicaciones [rango de fechas]</th></tr>';
 echo sprintf('<tr><td>$%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $total. ' [~$'.number_format($total/max(mysql_num_rows($r),1),2,'.',',').']', mysql_num_rows($r),'<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
 echo '</table>';
+endif;
+
 echo $buffer;
 
-if (_F_usuario_cache('nivel') == _N_administrador_sv && empty($_GET['export']))
+if (_F_usuario_cache('nivel') == _N_administrador_sv && empty($_GET['export']) && !isset($_GET['aplicaciones_mostrar_incrustada']))
 {
     echo '<hr />';
     echo '<form action="'.PROY_URL_ACTUAL_DINAMICA.'" method="post"><input type="submit" name="lote" value="Enviar todo lo visible a mi correo" /></form>';

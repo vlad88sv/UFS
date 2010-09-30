@@ -254,7 +254,7 @@ if ($f['tipo'] == 'debt')
         </tr>
         <tr>
             <td><?php echo $f['especial6']; ?></td>
-            <td><?php echo $f['interes'] . '% / ' . $f['especial7']; ?></td>
+            <td><?php echo (double) ($f['interes']) . '% / ' . $f['especial7']; ?></td>
         </tr>
         <?php endif; ?>
     </table>

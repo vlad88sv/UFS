@@ -8,9 +8,13 @@ if (isset($_POST['guardar']))
     $DATOS['ID_prospecto'] = db_codex($_POST['ID_prospecto']);
     db_reemplazar_datos(db_prefijo.'prospectos_encuesta',$DATOS);
 }
+$_GET['aplicaciones_mostrar_incrustada'] = true;
+require_once('php/_aplicaciones.php');
 ?>
+
 <form action="<?php echo PROY_URL_ACTUAL_DINAMICA; ?>" method="post">
 <input type="hidden" name="ID_prospecto" value="<?php echo $_GET['p']; ?>" />
 <div class="encuesta"><?php require_once('php/_prospecto_encuesta.php'); ?></div>
-<input type="submit" name="guardar" value="Guardar" />
+<input type="submit" name="guardar" value="Guardar aplicacion preliminar" />
 </form>
+<p class="mini">Nota: solo guarda las modificaciones a los datos de la aplicación preliminar</p>
