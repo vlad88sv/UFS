@@ -129,7 +129,7 @@ if (empty($_GET['p']) && empty($_GET['r']))
 
     }
     */
-    $WHERE = 'situacion="nuevo" AND ultima_presentacion < (DATE(NOW()) - INTERVAL 7 DAY) AND no_pool=0 ORDER BY RAND()';
+    $WHERE = 'situacion="nuevo" AND ultima_presentacion < (DATE(NOW()) - INTERVAL 7 DAY) AND no_pool=0 ORDER BY FIELD(`timezone`,"eastern","central","mountain","pacific")';
 }
 // Esta viendo un recordatorio
 elseif (isset($_GET['p']) && isset($_GET['r']))
@@ -229,7 +229,7 @@ if ($f['tipo'] == 'debt')
         </tr>
         <tr>
             <td style="color:#F00;"><?php echo $f['nombre'].' '.$f['apellido']; ?></td>
-            <td style="color:#F00;font-weight:bold;"><?php echo preg_replace(array('/[^\d]/','/(\d{10})/','/(\d{1})(\d{3})(\d{7})/'),array('','1$1','$1-$2-$3'),$f['telefono']); ?></td>
+            <td style="color:#F00;font-weight:bold;"><?php echo preg_replace(array('/[^\d]/','/^(\d{10})$/','/^(\d{1})(\d{3})(\d{7})$/'),array('','1$1','$1-$2-$3'),$f['telefono']); ?></td>
         </tr>
 
         <tr>
