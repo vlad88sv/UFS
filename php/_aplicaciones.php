@@ -198,7 +198,7 @@ if(isset($_GET['cerradas']))
     $WHERE = 'AND fecha_cerrada';
 
 if (isset($_GET['fecha_inicio']) && isset($_GET['fecha_final']))
-    $WHERE .= sprintf(' AND fecha_ingresada BETWEEN "%s" AND "%s"',mysql_date(str_replace('/','-',$_GET['fecha_inicio'])),mysql_date(str_replace('/','-',$_GET['fecha_final'])));
+    $WHERE .= sprintf(' AND DATE(fecha_ingresada) BETWEEN "%s" AND "%s"',mysql_date(str_replace('/','-',$_GET['fecha_inicio'])),mysql_date(str_replace('/','-',$_GET['fecha_final'])));
 
 if(isset($_GET['fecha_ingresada']))
     $WHERE .= sprintf(' AND DATE(fecha_ingresada)="%s"',mysql_date(str_replace('/','-',$_GET['fecha_ingresada'])));
@@ -289,6 +289,12 @@ while($f = mysql_fetch_assoc($r))
         $clase_aplicacion = 'tabla-aplicacion';
     }
 
+    // Formateemos el telefono segun locale
+    if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_us,_N_agente_us,_N_agente_us_solo)))
+        $f['telefono'] = preg_replace(array('/[^\d]/','/^(\d{3})(\d{7})$/'),array('','$1-$2-$3'),$f['telefono']);
+    else
+        $f['telefono'] = preg_replace(array('/[^\d]/','/^(\d{10})$/','/^(\d{1})(\d{3})(\d{7})$/'),array('','1$1','$1-$2-$3'),$f['telefono']);
+
     $datos = '
     <table class="tabla-estandar '.$clase_aplicacion.'">
     <tr><th>Agente [SV]</th><th>Agente [US]</th><th>Fecha ingresada</th><th>Fecha aceptada</th><th>Fecha cerrada</th></tr>
@@ -304,7 +310,7 @@ while($f = mysql_fetch_assoc($r))
     </tr>
     <tr>
         <td>'.$f['apellido'] . ', ' . $f['nombre'].'</td>
-        <td>'.preg_replace(array('/[^\d]/','/(\d{10})/','/(\d{1})(\d{3})(\d{7})/'),array('','1$1','$1-$2-$3'),$f['telefono']).'</td>
+        <td>'.$f['telefono'].'</td>
         <td>'.$f['direccion2'].'</td>
         <td>'.$f['zip'].'</td>
         <td>'.$f['ciudad'].'</td>
