@@ -25,6 +25,7 @@ a:hover{color:#50f;border:none;}
 #cabecera tr{margin:0;border:0;}
 #cabecera td{vertical-align:top;}
 #header #logotipo{width:230px;}
+#header #logotipo td, #header #logotipo th{font-size:0.75em;}
 #header #centro{width:*;font-size:1.3em;color:#F00;text-align:center;}
 #header #telefonos{width:180px;white-space:nowrap;font-size:0.7em;text-align:center;vertical-align:middle;}
 #header #telefonos>img{width:52px;height:23px;}
