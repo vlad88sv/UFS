@@ -22,10 +22,7 @@ function EnviarMensajitosUS($telefono, $carrier, $mensaje)
     if (!array_key_exists($carrier,$aCarrier))
         return;
 
-    $headers = 'MIME-Version: 1.0' . "\r\n" . 'Content-type: text/html; charset=UTF-8' . "\r\n";
-    $headers .= 'From: "'. PROY_NOMBRE .'" <'. PROY_MAIL_POSTMASTER . ">\r\n";
-
-    echo $telefono.'@'.$aCarrier[$carrier].' ';
-    return correoSMTP($telefono.'@'.$aCarrier[$carrier],PROY_NOMBRE,$mensaje,false);
+    correoSMTP($telefono.'@'.$aCarrier[$carrier],PROY_NOMBRE,$mensaje,false);
+    return;
 }
 ?>

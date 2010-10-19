@@ -26,17 +26,19 @@ if (S_iniciado())
         <?php if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us_solo,_N_agente_us))):?>
             <li class="dir"><a href="<?php echo PROY_URL; ?>prospecto" title="">Prospecto</a></li>
         <?php endif; ?>
-        <li class="dir"><a href="<?php echo PROY_URL; ?>aplicaciones?fecha_ingresada=now" title="">Aplicaciones</a>
+        <li class="dir"><a href="<?php echo PROY_URL; ?>aplicaciones?instrucciones" title="">Aplicaciones</a>
         <ul>
+        <li><a href="<?php echo PROY_URL; ?>aplicaciones_positivas" title="">Positivas</a></li>
         <?php if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us))):?>
             <li><a href="<?php echo PROY_URL; ?>aplicaciones_grupo?fecha_ingresada=now" title="">Solo de mi grupo</a></li>
             <li><a href="<?php echo PROY_URL; ?>aplicaciones_vigiladas" title="">Vigiladas</a></li>
         <?php endif; ?>
-        <?php if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us,_N_agente_us))):?>
-            <li><a href="<?php echo PROY_URL; ?>aplicaciones_desactualizadas" title="">Desactualizadas</a></li>
-            <li><a href="<?php echo PROY_URL; ?>aplicaciones_libres?fecha_ingresada=now" title="">Sin tomar (libres)</a></li>
-        <?php endif; ?>
+        <li><a href="<?php echo PROY_URL; ?>aplicaciones_desactualizadas" title="">Desactualizadas</a></li>
+        <li><a href="<?php echo PROY_URL; ?>aplicaciones_pendientes" title="">Sin tomar (libres)</a></li>
+        <li><a href="<?php echo PROY_URL; ?>aplicaciones_esperando" title="">Sin procesar</a></li>
         <li><a href="<?php echo PROY_URL; ?>aplicaciones_validas?fecha_inicio=-3 day&fecha_final=now" title="">Válidas</a></li>
+        <li><a href="<?php echo PROY_URL; ?>aplicaciones_invalidas?fecha_inicio=-3 day&fecha_final=now" title="">Inválidas</a></li>
+        <li><a href="<?php echo PROY_URL; ?>aplicaciones_vendidas?fecha_inicio=-3 day&fecha_final=now" title="">Vendidas</a></li>
         </ul>
         </li>
 
@@ -47,7 +49,7 @@ if (S_iniciado())
     <?php endif; ?>
 
     <?php if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us,_N_agente_sv))):?>
-    <li><a href="<?php echo PROY_URL; ?>estadisticas" title="">Estadísticas</a></li>
+        <li class="dir"><a href="<?php echo PROY_URL; ?>estadisticas" title="">Estadísticas</a></li>
     <?php endif; ?>
 
 
@@ -60,6 +62,9 @@ if (S_iniciado())
     </li>
 
     <li class="dir"><a href="" title=""><?php echo _F_usuario_cache('nombre'); ?></a></li>
+    <?php if (0): ?>
+    <li class="dir"><a href="<?php echo PROY_URL; ?>chat" title="Chat UFS Online Network" target="_blank">CHAT</a></li>
+    <?php endif; ?>
     <li class="dir busqueda">
     <form action="<?php echo PROY_URL; ?>buscar" class="buscar">
     <?php echo ui_input('q');?> <input type="submit" value="Búscar" class="btnlnk btnlnk-mini" />

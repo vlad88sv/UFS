@@ -31,6 +31,9 @@ switch ($_GET['peticion'])
     case 'encuesta':
         require_once('php/_prospecto_encuesta_wrapper.php');
     break;
+    case 'chat':
+        require_once('php/phpfreechat/index.php');
+    break;
     case 'faq':
         require_once('php/_faq.php');
     break;

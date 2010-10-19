@@ -63,6 +63,17 @@ function ui_array_a_opciones($array)
 	return $buffer;
 }
 
+function ui_array_key_opciones($array)
+{
+	$buffer = '';
+	foreach ($array as $valor => $texto)
+	{
+		$buffer .= '<option value="'.$texto.'">'.$texto.'</option>'."\n";
+	}
+
+	return $buffer;
+}
+
 function HEAD_JS()
 {
     global $arrJS;

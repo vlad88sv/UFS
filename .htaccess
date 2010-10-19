@@ -18,17 +18,12 @@ Options +FollowSymLinks
 
 RewriteBase /
 
-RewriteRule ^(.*\.(css|js))$ /obgz.php?archivo=$1 [L]
 RewriteRule ^(inicio|final|buscar|prospecto|aplicaciones|estadisticas|recordatorios|usuarios)$ index.php?peticion=$1&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_grupo$ index.php?peticion=aplicaciones&grupo&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_agente_(sv|us)_([0-9]+)$ index.php?peticion=aplicaciones&a$1=$2&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_agente_(sv|us)_validas_([0-9]+)$ index.php?peticion=aplicaciones&validas&a$1=$2&%{QUERY_STRING} [L]
-RewriteRule ^aplicaciones_vigiladas$ index.php?peticion=aplicaciones&vigiladas&%{QUERY_STRING} [L]
-RewriteRule ^aplicaciones_validas$ index.php?peticion=aplicaciones&validas&%{QUERY_STRING} [L]
-RewriteRule ^aplicaciones_desactualizadas$ index.php?peticion=aplicaciones&desactualizadas&%{QUERY_STRING} [L]
-RewriteRule ^aplicaciones_asignadas$ index.php?peticion=aplicaciones&asignadas&%{QUERY_STRING} [L]
-RewriteRule ^aplicaciones_libres$ index.php?peticion=aplicaciones&pendientes&%{QUERY_STRING} [L]
 RewriteRule ^aplicaciones_miniapp$ index.php?peticion=encuesta&%{QUERY_STRING} [L]
+RewriteRule ^aplicaciones_(.*)$ index.php?peticion=aplicaciones&$1&%{QUERY_STRING} [L]
 RewriteRule ^FAQ$ index.php?peticion=faq&%{QUERY_STRING} [L]
 RewriteRule ^ajax$ ajax.php?%{QUERY_STRING} [L]
 
@@ -36,3 +31,6 @@ RewriteCond %{REQUEST_URI} ^/image_([0-9]+)_([0-9]+)_([a-za-z0-9]{40})(\.jpg){0,
 RewriteCond %{DOCUMENT_ROOT}/IMG/i/m/%1_%2_%3 -f
 RewriteRule ^image_([0-9]+)_([0-9]+)_([a-za-z0-9]{40}).*$ %{DOCUMENT_ROOT}/IMG/i/m/$1_$2_$3 [L]
 RewriteRule ^image_([0-9]+)_([0-9]+)_([a-za-z0-9]{40}).*$ imagen.php?tipo=normal&ancho=$1&alto=$2&sha1=$3 [L]
+
+#Workarounds
+Rewriterule ^chat/inicio$ http://ufsonline.net/inicio [r=301]

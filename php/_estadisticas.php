@@ -76,8 +76,12 @@ if (mysql_num_rows($r2))
 echo '
 <h2>Los 5 agentes que mas aplicaciones han ingresado (a nivel global)</h2>
 <table class="tabla-estandar cebra">
-    <tr><th>Nombre de agente</th><th>Grupo</th><th>País</th><th>Cantidad</th></tr>
 ';
+
+    if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us,_N_agente_us_solo)))
+        echo '<tr><th>Nombre de agente</th><th>Grupo</th><th>País</th><th>Cantidad</th></tr>';
+    else
+        echo '<tr><th>Nombre de agente</th><th>Grupo</th><th>País</th><th>Cantidad (válidas)</th></tr>';
 
 while($f = mysql_fetch_assoc($r)) {
     if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us,_N_agente_us_solo)))
@@ -92,13 +96,13 @@ echo '</table>';
 if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv))):
 /***************/
 // Estadísticas de agentes US
-$c = 'SELECT COUNT(*) AS "cuenta",(SELECT COUNT(*) FROM ufs__prospectos_aplicados AS o WHERE o.ID_agente_us=a.ID_agente_us AND aplicacion_valida="valida") AS "cuenta_validas",a.ID_agente_us, nombre, local, (SELECT nombre FROM ufs__usuarios AS st1 WHERE st1.ID_usuario = c.ID_usuario) AS "nombre_supervisor", pais FROM ufs__prospectos_aplicados AS a LEFT JOIN ufs__usuarios AS b ON a.ID_agente_us = b.ID_usuario LEFT JOIN ufs__supervisores AS c USING(ID_supervisor) WHERE b.nivel="agente_us" GROUP BY a.ID_agente_us ORDER BY COUNT(*) DESC '.$LIMIT;
+$c = 'SELECT COUNT(*) AS "cuenta",(SELECT COUNT(*) FROM ufs__prospectos_aplicados AS o WHERE o.ID_agente_us=a.ID_agente_us AND aplicacion_valida<>"desconocido") AS "cuenta_validas",a.ID_agente_us, nombre, local, (SELECT nombre FROM ufs__usuarios AS st1 WHERE st1.ID_usuario = c.ID_usuario) AS "nombre_supervisor", pais FROM ufs__prospectos_aplicados AS a LEFT JOIN ufs__usuarios AS b ON a.ID_agente_us = b.ID_usuario LEFT JOIN ufs__supervisores AS c USING(ID_supervisor) WHERE b.nivel="agente_us" GROUP BY a.ID_agente_us ORDER BY COUNT(*) DESC '.$LIMIT;
 $r = db_consultar($c);
 
 echo '
 <h2>Aplicaciones por agente US (a nivel global)</h2>
 <table class="tabla-estandar cebra">
-    <tr><th>Nombre de agente</th><th>Grupo</th><th>País</th><th>Cantidad</th></tr>
+    <tr><th>Nombre de agente</th><th>Grupo</th><th>País</th><th>Cantidad (procesadas)</th></tr>
 ';
 
 while($f = mysql_fetch_assoc($r)) {

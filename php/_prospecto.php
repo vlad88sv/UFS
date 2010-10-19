@@ -67,7 +67,7 @@ if (isset($_POST['ID_prospecto']))
         _prospecto_guardar_encuesta();
 
 /**/
-        if (in_array(_F_usuario_cache('nivel'),array(_N_agente_sv,_N_administrador_sv)));
+        if (in_array(_F_usuario_cache('nivel'),array(_N_agente_sv,_N_administrador_sv)))
             enviar_prospecto($i,$_POST['ID_prospecto']);
 /**/
         header('Location: '.PROY_URL_ACTUAL);
@@ -94,6 +94,12 @@ if (isset($_POST['ID_prospecto']))
         _prospecto_guardar_encuesta();
     }
 
+    if (isset($_POST['reciclar']))
+    {
+        db_actualizar_datos(db_prefijo.'prospectos',array('situacion' => 'luego'),'ID_prospecto='.$_POST['ID_prospecto']);
+        db_agregar_datos(db_prefijo.'notas',array('ID_prospecto' => $_POST['ID_prospecto'],  'ID_usuario' => _F_usuario_cache('ID_usuario'), 'nota' => $_POST['notas'], 'fecha' => mysql_datetime(), 'accion' => 'luego'));
+    }
+
     if (isset($_POST['descartar']))
     {
         db_actualizar_datos(db_prefijo.'prospectos',array('situacion' => 'descartado'),'ID_prospecto='.$_POST['ID_prospecto']);
@@ -108,31 +114,8 @@ if (isset($_POST['ID_prospecto']))
 // * preferencia horaria: east, central, west
 
 /* FIX: usar transacción para evitar condición de carrera */
-if (empty($_GET['p']) && empty($_GET['r']))
-{
-
-    /*
-    switch (0)
-    {
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-            $PREFERENCIA_HORARIA = 'SELECT ';
-            break;
-        case 17:
-        case 18:
-        case 19:
-
-        break;
-        default:
-
-    }
-    */
-    $WHERE = 'situacion="nuevo" AND ultima_presentacion < (DATE(NOW()) - INTERVAL 7 DAY) AND no_pool=0 ORDER BY FIELD(`timezone`,"eastern","central","mountain","pacific")';
-}
 // Esta viendo un recordatorio
-elseif (isset($_GET['p']) && isset($_GET['r']))
+if (isset($_GET['p']) && isset($_GET['r']))
 {
     $cRecordatorio = 'SELECT `ID_recordatorio`, `ID_usuario`, `ID_prospecto`, `fecha`, `nota` FROM `'.db_prefijo.'recordatorio` WHERE ID_recordatorio = "'.db_codex($_GET['r']).'" AND ID_prospecto = "'.db_codex($_GET['p']).'"';
     $rRecordatorio = db_consultar($cRecordatorio);
@@ -140,21 +123,24 @@ elseif (isset($_GET['p']) && isset($_GET['r']))
     {
         db_consultar('DELETE FROM '.db_prefijo.'recordatorio WHERE ID_recordatorio="'.$fRecordatorio['ID_recordatorio'].'" AND ID_prospecto="'.db_codex($fRecordatorio['ID_prospecto']).'"');
         db_actualizar_datos(db_prefijo.'prospectos',array('situacion' => 'nuevo'),'ID_prospecto='.$fRecordatorio['ID_prospecto']);
-        $WHERE = 'ID_prospecto="'.$fRecordatorio['ID_prospecto'].'"';
-    }
-    else
-    {
-        header('Location: '.PROY_URL_ACTUAL);
+        header ('Location: '. PROY_URL . 'prospecto?p=' . $fRecordatorio['ID_prospecto']);
+        exit;
+    } else {
+        unset($_GET['p']);
+        unset($_GET['r']);
     }
 }
+
+// No esta viendo nada
+if (empty($_GET['p']) && empty($_GET['r']))
+{
+    $WHERE = 'situacion="nuevo" AND ultima_presentacion < (DATE(NOW()) - INTERVAL 7 DAY) AND no_pool=0 ORDER BY FIELD(`timezone`,"eastern","central","mountain","pacific")';
+}
+
 // Viendo un prospecto numerado
-elseif (isset($_GET['p']))
+if (isset($_GET['p']) && empty($_GET['r']))
 {
     $WHERE = 'ID_prospecto="'.db_codex($_GET['p']).'"';
-}
-else
-{
-    header('Location: '.PROY_URL_ACTUAL);
 }
 
 $c = 'SELECT `ID_prospecto`, `situacion`, IF(`ultima_presentacion`,`ultima_presentacion`,"Nunca") AS "ultima_presentacion", `intentos`, `apellido`, `nombre`, `direccion1`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `interes`, `tipo` FROM `'.db_prefijo.'prospectos` WHERE '.$WHERE;
@@ -174,14 +160,13 @@ $ID_prospecto = $f['ID_prospecto'];
 // Tocar para que no le salga a nadie mas por este dia
 db_actualizar_datos(db_prefijo.'prospectos',array('ultima_presentacion' => mysql_date()),'ID_prospecto='.$f['ID_prospecto']);
 
-
 // Obtengamos los recordatorios de esta hora...
-$c = 'SELECT `ID_recordatorio`, `ID_usuario`, `ID_prospecto`, `fecha`, `nota`, `nombre`, `apellido` FROM `'.db_prefijo.'recordatorio` LEFT JOIN `'.db_prefijo.'prospectos` USING(ID_prospecto) WHERE ID_usuario='._F_usuario_cache('ID_usuario').' AND ( `fecha` < (NOW() + INTERVAL 30 MINUTE) )';
+$c = 'SELECT `ID_recordatorio`, `ID_usuario`, `ID_prospecto`, `fecha`, `nota`, `nombre`, `apellido` FROM `'.db_prefijo.'recordatorio` LEFT JOIN `'.db_prefijo.'prospectos` USING(ID_prospecto) WHERE ID_usuario='._F_usuario_cache('ID_usuario').' AND ( `fecha` < (NOW() + INTERVAL 5 MINUTE) )';
 $rr = db_consultar($c);
 
+echo '<h2>Recordatorios programados para esta hora</h2>';
 if (mysql_num_rows($rr))
 {
-    echo '<h2>Hay recordatorios programados para esta hora</h2>';
     echo '<table class="tabla-estandar">';
     echo '<tr><th width="30%">Fecha</th><th>Prospecto</th><th width="50%">Nota</th><th>Enlace</th></tr>';
     while ($ff = mysql_fetch_assoc($rr))
@@ -189,22 +174,8 @@ if (mysql_num_rows($rr))
         echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$ff['fecha'],$ff['apellido'].' , '.$ff['nombre'],$ff['nota'],'<a href="'.PROY_URL_ACTUAL.'?p='.$ff['ID_prospecto'].'&r='.$ff['ID_recordatorio'].'">ver</a>');
     }
     echo '</table><hr style="border:1px solid #F00;"/>';
-}
-
-// Obtengamos las notas...
-$c = 'SELECT `ID_nota`, `ID_prospecto`, `ID_usuario`, `nota`, `fecha`, `accion`, `nombre` FROM '.db_prefijo.'notas LEFT JOIN '.db_prefijo.'usuarios USING(`ID_usuario`) WHERE ID_prospecto='.$f['ID_prospecto'];
-$rr = db_consultar($c);
-
-if (mysql_num_rows($rr))
-{
-    echo '<h2>Notas que dejaron otros agentes sobre este prospecto</h2>';
-    echo '<table class="tabla-estandar">';
-    echo '<tr><th width="15%">Fecha</th><th width="20%">Agente</th><th width="45%">Nota</th><th width="20%">Acción</th></tr>';
-    while ($ff = mysql_fetch_assoc($rr))
-    {
-        echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$ff['fecha'],$ff['nombre'],$ff['nota'],$ff['accion']);
-    }
-    echo '</table><hr style="border:1px solid #F00;"/>';
+} else {
+    echo '<p>Por el momento no hay ningún recordatorio que mostrar.<br /> Todos los recordatorios pendientes se muestran 5 minutos antes de la hora programada.</p>';
 }
 
 if ($f['tipo'] == 'debt')
@@ -269,6 +240,24 @@ if ($f['tipo'] == 'debt')
         </tr>
     </table>
     <div id="nuevo_prospecto" style="color:#F00;background-color:#000;font-size:2em;text-align:center;">Prospecto cargado</div>
+
+    <?php
+    // Obtengamos las notas...
+    $c = 'SELECT `ID_nota`, `ID_prospecto`, `ID_usuario`, `nota`, `fecha`, `accion`, `nombre` FROM '.db_prefijo.'notas LEFT JOIN '.db_prefijo.'usuarios USING(`ID_usuario`) WHERE ID_prospecto='.$f['ID_prospecto'];
+    $rr = db_consultar($c);
+
+    if (mysql_num_rows($rr))
+    {
+        echo '<h2>Notas que dejaron otros agentes sobre este prospecto</h2>';
+        echo '<table class="tabla-estandar">';
+        echo '<tr><th width="15%">Fecha</th><th width="20%">Agente</th><th width="45%">Nota</th><th width="20%">Acción</th></tr>';
+        while ($ff = mysql_fetch_assoc($rr))
+        {
+            echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$ff['fecha'],$ff['nombre'],$ff['nota'],$ff['accion']);
+        }
+        echo '</table><hr style="border:1px solid #F00;"/>';
+    }
+    ?>
     <?php echo _prospecto_tabla_botones(); ?>
 
     <div class="subtitulo">Aplicación preliminar</div>

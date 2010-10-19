@@ -49,20 +49,25 @@ function correoSMTP($para, $asunto, $mensaje,$html=true)
    $Mail->IsHTML($html) ;
    $Mail->SetLanguage("es", 'php/language/');
    $Mail->PluginDir	= 'php/';
-   $Mail->Mailer	= "smtp";
+   $Mail->Mailer	= 'smtp';
    $Mail->Host		= "smtp.gmail.com";
    $Mail->SMTPSecure    = "ssl";
    $Mail->Port		= 465;
    $Mail->SMTPAuth	= true;
    $Mail->Username	= "info@ufsonline.net";
-   $Mail->Password	= "2J2962";
+   $Mail->Password	= "22436017";
    $Mail->CharSet	= "utf-8";
    $Mail->Encoding	= "quoted-printable";
    $Mail->FromName	= PROY_MAIL_POSTMASTER_NOMBRE.PROY_MAIL_POSTMASTER;
    $Mail->Subject	= $asunto;
    $Mail->Body		= $mensaje;
    $Mail->AddAddress($para);
-   return $Mail->Send();
+   $x = $Mail->Send();
+
+   if ($x)
+      return $x;
+   else
+      return correo($para, $asunto, $mensaje);
 }
 
 function enviar_prospecto($ID_aplicacion, $ID_prospecto, $lote=false)
@@ -92,12 +97,27 @@ function enviar_prospecto($ID_aplicacion, $ID_prospecto, $lote=false)
    <tr><th style="text-align:right;border-right:1px solid #000;">Lender</th><td>'.$f['especial6'].'</td></tr>
    <tr><th style="text-align:right;border-right:1px solid #000;">Notas</th><td>'.$f['notas'].'</td></tr>
    </table>
-   <a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'">Ir a la aplicación</a>
+   <a href="'.PROY_URL.'aplicaciones?ver='.$f['ID_aplicacion'].'&correo">Ir a la aplicación</a>
    ';
    } else {
    $buffer = '
    <p>El agente <b>'.$f['nombre_agente_sv'].'</b> ha ingresado una nueva aplicación.</p>
-   <a href="'.PROY_URL.'aplicaciones?a='.$f['ID_aplicacion'].'">Ir a la aplicación</a>
+   <a href="'.PROY_URL.'aplicaciones?ver='.$f['ID_aplicacion'].'&correo">Ir a la aplicación</a>
+   <hr />
+   <p>
+   <small>
+   Ud. ha recibido esta notificación por una de las siguientes causas:
+   <ul>
+   <li>Ud. es un agente US registrado en el sistema UFS Online Network</li>
+   <li>Ud. esta en la lista de administradores/supervisores</li>
+   </ul>
+   <hr />
+   <span style="color:#F00;">
+   NO RESPONDA A ESTE CORREO, LOS CORREOS ENVIADOS A '.htmlentities(PROY_MAIL_POSTMASTER).' NO SON REVISADOS.<br />
+   En su lugar puede comentar en la aplicación mencionada.
+   </span>
+   </small>
+   </p>
    ';
    }
 
@@ -110,12 +130,7 @@ function enviar_prospecto($ID_aplicacion, $ID_prospecto, $lote=false)
       $r = db_consultar($c);
 
       while (mysql_num_rows($r) && $f =  mysql_fetch_assoc($r))
-      {
-         $correos[] = $f['correo'];
          EnviarMensajitosUS($f['telefono'],$f['carrier'],'Nueva aplicacion disponible en el sistema');
-      }
-      if (count($correos))
-         correo(join(',',$correos),'Nueva aplicación - '.$ID_aplicacion.'+'.$ID_prospecto, $buffer);
 
       correoSMTP('broadcast@ufsonline.net','Nueva aplicación - '.$ID_aplicacion.'+'.$ID_prospecto, $buffer);
    }
@@ -130,7 +145,7 @@ function enviar_lote($r)
       $i++;
       $buffer .= '<hr />#'.$i.'<br />'.enviar_prospecto($f['ID_aplicacion'],$f['ID_prospecto'],true);
    }
-   correo(_F_usuario_cache('correo'),'Aplicaciones en lote', $buffer);
+   correoSMTP(_F_usuario_cache('correo'),'Aplicaciones en lote', $buffer);
    echo '<div>Lote enviado a '. _F_usuario_cache('correo').' - '.strlen($buffer).' Bytes</div>';
    mysql_data_seek($r,0);
 }

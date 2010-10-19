@@ -31,26 +31,26 @@ a:hover{color:#50f;border:none;}
 #header #telefonos>img{width:52px;height:23px;}
 #header #telefonos>p{margin:0;}
 
-#menu_superior{border-spacing:0;border-collapse:collapse;line-height:29px;height:29px;margin-bottom:5px;}
+#menu_superior{border-spacing:0;border-collapse:collapse;line-height:22px;height:22px;margin-bottom:5px;background-color:#E1E1E1;background-image:url('img/menu.png');background-repeat:repeat-x;}
 #menu_superior:after{clear:both;}
 .dropdown, .dropdown li, .dropdown ul{list-style:none;margin:0;padding:0;}
-.dropdown{z-index:597;background-color:#E1E1E1;background-image:url('img/menu.png');background-repeat:repeat-x;font-size:0.9em;width:780px;line-height:29px;height:29px;}
-.dropdown li{float:left;height:29px;line-height:normal;position:relative;}
+.dropdown{z-index:597;font-size:0.9em;width:780px;line-height:25px;height:25px;}
+.dropdown li{float:left;line-height:18px;height:18px;position:relative;}
 .dropdown li.hover, .dropdown li:hover{z-index:599;cursor:default;}
 .dropdown ul{visibility:hidden;position:absolute;top:100%;left:0;z-index:598;width:100%;}
 .dropdown ul li{float:none;}
 .dropdown ul ul{top:1px;left:99%;}
 .dropdown li:hover > ul{visibility:visible;}
-.dropdown li a{display:block;padding:5px 10px;}
+.dropdown li a{padding:5px 10px;}
 .dropdown .dir li{padding:0;}
 .dropdown .dir li:hover{font-weight:bold;}
-.dropdown .dir li a, .dropdown .dir li span{padding:0 10px;}
+.dropdown .dir li a, .dropdown .dir li span{padding:0 5px;}
 .dropdown li, .dropdown ul li{padding:0;}
 .dropdown li.dir{padding:0px;vertical-align:middle;}
 .dropdown ul li.dir{padding:5px 15px;}
 .dropdown ul a, .dropdown ul span{padding-left:15px;}
 .dropdown .btnlnk{padding:0px;}
-.dropdown>li{border-left:4px solid #F5F5F5;white-space:nowrap;}
+.dropdown>li{border:2px solid #BBB;border-left:2px solid #F5F5F5;borderwhite-space:nowrap;}
 .dropdown>li.ultimo{border-right:4px solid #FFFFFF;}
 .dropdown li.hover, .dropdown li:hover, .lidestacado{background-color:#9F9F9F;background-image:url('img/menu2.png');background-repeat:repeat-x;color:#FFF;}
 .lidestacado{font-weight:bolder;}
@@ -66,9 +66,9 @@ a:hover{color:#50f;border:none;}
 .dropdown .dir ul li:hover{background-color:#F1A336;}
 .dropdown .dir ul li a{color:#000;}
 .dropdown .dir ul li a:hover{color:#333;}
-.dropdown .busqueda{float:right;}
+.dropdown .busqueda{float:right;border:0;margin:0;padding:0;}
 .dropdown .busqueda:hover{background:none;}
-.dropdown .busqueda form{line-height:29px;}
+.dropdown .busqueda form{line-height:22px;padding:0;}
 .dropdown .busqueda form #q{width:5em;}
 
 #tabla-ventas,#tabla-ventas input {font-size:8pt;padding:0;border:thin solid #DDD;margin:0;background-color:#FFF;}
@@ -78,7 +78,7 @@ a:hover{color:#50f;border:none;}
 .tabla-estandar th{font-size:0.9em;}
 .tabla-estandar td{vertical-align:top;padding:1px 10px;border:1px solid #CCC;}
 
-.cebra tr:nth-child(even) {background-color:#DDD;} /* same */
+.cebra tr:nth-child(even) {background-color:#F7F7F7;} /* same */
 .cebra tr:nth-child(odd) {background-color:#FFF;} /* same */
 
 .tabla-aplicacion td {font-size:0.8em;background-color:#F9F9B8; padding:1em;}
@@ -116,3 +116,9 @@ a:hover{color:#50f;border:none;}
 .historia-fecha{width:61px;font-size:0.6em;}
 .historia-por{width:61px;font-size:0.6em;}
 .historia-nota{widows:*;font-size:0.6em;}
+
+#portada table th {font-size:0.8em;}
+#portada table td {font-size:0.6em;}
+
+
+ul.instrucciones li {padding-bottom:1em;}

@@ -10,18 +10,55 @@ switch (_F_usuario_cache('nivel'))
 {
     case _N_administrador_us:
     case _N_administrador_sv:
-        mostrar_recordatorios();
+        echo '
+        <p>
+        <span style="font-weight:bold;">Instrucciones rápidas</span>
+        </p>
+        <p>
+        <ul>
+        <li>Para buscar una aplicación por ID de aplicación, ingrese a:#_de_aplicacion en el cuadro de búsqueda.</li>
+        <li>Para buscar una prospecto por ID de prospecto, ingrese p:#_de_prospecto en el cuadro de búsqueda.</li>
+        </ul>
+        </p>';
+        portada_mostrar_desactualizados();
         echo '<br />';
-        portada_mostrar_notas();
+        mostrar_recordatorios();
         break;
     case _N_agente_us:
-        echo '<p><span style="font-weight:bold;">Instrucciones rápidas</span></p><p>Para ver todas las aplicaciones (libres y suyas) ir a Menú -> Aplicaciones.<br /><p>Para ver las aplicaciones libres ir a Menú -> Aplicaciones libres.<br /><b style="color:#F00;">Para ver las aplicaciones que he tomado ir a Menú -> <a href="'.PROY_URL.'aplicaciones?asignadas">Mis aplicaciones</a>.</b></p>';
+        echo '
+        <p>
+        <span style="font-weight:bold;">Instrucciones rápidas</span>
+        </p>
+        <p>
+        <ul>
+        <li>Para buscar una aplicacion por ID de aplicación, ingrese a:#_de_aplicacion en el cuadro de búsqueda.</li>
+        <li>Para ver todas las aplicaciones a su alcance ir a Menú -> Aplicaciones.</li>
+        <li>Para ver todas las aplicaciones que estan pendientes de actualizar ir a Menú -> Desactualizadas.</li>
+        <li>Para ver las aplicaciones libres ir a Menú -> Sin tomar (libres)</li>
+        <li>Para ver las aplicaciones vendidas (negocio cerrado) ir a Menú -> Sin tomar (libres)</li>
+        <li>Para ver las aplicaciones que he tomado ir a Menú -> <a href="'.PROY_URL.'aplicaciones?asignadas">Mis aplicaciones</a>.</li>
+        </ul>';
+        portada_mostrar_desactualizados();
+        echo '<br />';
         mostrar_recordatorios();
         echo '<br />';
         portada_mostrar_notas();
         break;
     case _N_agente_sv:
-        echo '<p><span style="font-weight:bold;">Instrucciones rápidas</span></p><p>Para obtener un nuevo prospecto ir a Menú -> Prospecto.<br />Para ver las aplicaciones tomadas ir a Menú -> Aplicaciones.</p>';
+        echo '
+        <p>
+        <span style="font-weight:bold;">Instrucciones rápidas</span>
+        </p>
+        <p>
+        <ul>
+        <li>Para buscar una aplicación por ID de aplicación, ingrese a:#_de_aplicacion en el cuadro de búsqueda.</li>
+        <li>Para buscar una prospecto por ID de prospecto, ingrese p:#_de_prospecto en el cuadro de búsqueda.</li>
+        <li>Para obtener un nuevo prospecto ir a Menú -> Prospecto.</li>
+        <li>Para ver las aplicaciones tomadas ir a Menú -> Aplicaciones.</li>
+        </ul>
+        </p>';
+        portada_mostrar_desactualizados();
+        echo '<br />';
         mostrar_recordatorios();
         echo '<br />';
         portada_mostrar_notas();
@@ -34,7 +71,9 @@ echo '</div>';
 function mostrar_recordatorios()
 {
     echo '<div class="subtitulo">Recordatorios pendientes de aplicación</div>';
-    $c = sprintf('SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, `fecha_ingresada`, `fecha_aceptada`, `fecha_cerrada`, `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, `ID_recordatorio`, `ID_usuario`, `ID_aplicacion`, DATE_FORMAT(fecha,"%%e-%%b-%%Y %%r") AS "fecha_formato", `nota`, `fecha_visto` FROM %s LEFT JOIN %s USING (ID_prospecto) LEFT JOIN %s USING (ID_aplicacion) WHERE fecha_visto="0000-00-00 00:00:00" AND ID_usuario=%s ORDER BY `fecha` ASC', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos', db_prefijo.'prospectos_aplicados_recordatorio', _F_usuario_cache('ID_usuario'));
+    echo '<p>Se muestran todos recordatorios no vistos y los programados para los próximos 3 días</p>';
+
+    $c = sprintf('SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`, `especial5`, `especial6`, `especial7`, `ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, `fecha_ingresada`, `fecha_aceptada`, `fecha_cerrada`, `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, `ID_recordatorio`, `ID_usuario`, `ID_aplicacion`, DATE_FORMAT(fecha,"%%e-%%b-%%Y %%r") AS "fecha_formato", `nota`, `fecha_visto` FROM %s LEFT JOIN %s USING (ID_prospecto) LEFT JOIN %s USING (ID_aplicacion) WHERE fecha_visto="0000-00-00 00:00:00" AND ID_usuario=%s AND DATE(`fecha`) <= (DATE(NOW()) + INTERVAL 3 DAY) ORDER BY `fecha` ASC', db_prefijo.'prospectos_aplicados', db_prefijo.'prospectos', db_prefijo.'prospectos_aplicados_recordatorio', _F_usuario_cache('ID_usuario'));
     $r = db_consultar($c);
 
     if (mysql_num_rows($r))
@@ -67,7 +106,7 @@ function portada_mostrar_notas()
         * Maximo 3 días anteriores
     */
 
-    echo '<div class="subtitulo">Aplicaciones con notas en los últimos 3 días</div>';
+    echo '<div class="subtitulo">Aplicaciones actualizadas en los últimos 3 días</div>';
 
     if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us,_N_agente_us_solo)) || isset($_GET['forzar_agente_sv']))
         $where = 'AND ID_usuario = '._F_usuario_cache('ID_usuario');
@@ -85,6 +124,7 @@ function portada_mostrar_notas()
 
     if (mysql_num_rows($rA3dias))
     {
+        echo '<p>Se muestran todas las aplicaciones que han sido actualizadas con notas en los últimos 3 días</p>';
         while ($fA3Dias = mysql_fetch_assoc($rA3dias))
         {
             // Mostrar que aplicación es.
@@ -112,5 +152,44 @@ function portada_mostrar_notas()
     {
         echo '<p>No se encontraron notas anexas de aplicación</p>';
     }
+}
+
+function portada_mostrar_desactualizados()
+{
+    $WHERE = 'aplicacion_valida="desconocido" AND fecha_ingresada < (DATE(NOW()) - INTERVAL 2 DAY) AND pa.ID_aplicacion NOT IN (SELECT h.ID_aplicacion FROM '.db_prefijo.'historial AS h LEFT JOIN '.db_prefijo.'usuarios USING (ID_usuario) WHERE fecha > (DATE(NOW()) - INTERVAL 2 DAY) AND nivel="'._N_agente_us.'" )';
+    switch (_F_usuario_cache('nivel'))
+    {
+        case _N_administrador_sv:
+            $WHERE .= sprintf(' AND ID_agente_sv<>0');
+            break;
+        case _N_agente_sv:
+            $WHERE .= sprintf(' AND ID_agente_sv="%s"', _F_usuario_cache('ID_usuario'));
+            break;
+        case _N_agente_us:
+            $WHERE .= sprintf(' AND ID_agente_us="%s"', _F_usuario_cache('ID_usuario'));
+            break;
+        case _N_agente_us_solo:
+            $WHERE .= sprintf(' AND ID_agente_us="%s"', _F_usuario_cache('ID_usuario'));
+            break;
+    }
+    $c = 'SELECT @fecha := DATE_FORMAT((SELECT MAX(fecha) FROM  '.db_prefijo.'historial AS h WHERE h.ID_aplicacion=pa.ID_aplicacion AND h.ID_usuario=pa.ID_agente_us),"%e-%b-%Y / %r"), IF(@fecha,@fecha,"<span style=\"color:#F00;font-weight:bolder;\">Nunca ha comentado en esta aplicación</span>") AS fecha_ultima_actualizacion, `ID_prospecto`, `apellido`, `nombre`,  pa.`ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, DATE_FORMAT(`fecha_ingresada`,"%e-%b-%Y / %r") AS "fecha_ingresada_formato" FROM '.db_prefijo.'prospectos_aplicados AS pa LEFT JOIN '.db_prefijo.'prospectos AS p USING (ID_prospecto) WHERE '.$WHERE.' ORDER BY `fecha_ingresada` ASC';
+    $r = db_consultar($c);
+
+
+    echo '<div class="subtitulo">Listado de aplicaciones que necesitan atención</div>';
+    if (!mysql_num_rows($r)) {
+        echo '<p>¡Felicidades!, ¡todas sus aplicaciones estan actualizadas!</p>';
+        return;
+    } else {
+        echo '<p>Hay <b>'.mysql_num_rows($r).'</b> aplicaciones que no han sido marcadas como válidas o inválidas; y que no han sido actualizadas por el agente US que lleva el caso en los últimos 2 días</p>';
+    }
+
+    echo '<table class="tabla-estandar cebra">';
+    echo '<tr><th>Fecha de ingreso</th><th>Fecha última actualización por agente US</th><th>Prospecto</th><th>Acción</th></tr>';
+    while($f = mysql_fetch_assoc($r))
+    {
+        echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$f['fecha_ingresada_formato'],$f['fecha_ultima_actualizacion'],$f['apellido']. ', '. $f['nombre'],'<a href="'.PROY_URL.'aplicaciones?ver='.$f['ID_aplicacion'].'">Ver aplicación</a>');
+    }
+    echo '</table>';
 }
 ?>

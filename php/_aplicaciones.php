@@ -5,9 +5,53 @@ $(function($) {
 </script>
 <?php
 protegerme(false,true);
+ini_set("memory_limit","128M");
 $arrCSS[] = 'css/jquery-ui/jquery-ui-1.8.4.custom';
 $arrJS[] = 'jquery.ui.core';
 $arrJS[] = 'jquery.ui.datepicker';
+
+function aplicacion_ingresar_nota($ID_aplicacion,$nota,$tipo_nota,$notificar=true)
+{
+    db_agregar_datos(db_prefijo.'historial',array('tipo' => $tipo_nota, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $ID_aplicacion, 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+
+    if ($notificar)
+    {
+        $cNotificaciones = sprintf('SELECT DISTINCT correo FROM '.db_prefijo.'historial AS h LEFT JOIN '.db_prefijo.'usuarios AS u USING(ID_usuario) WHERE h.ID_usuario<>'._F_usuario_cache('ID_usuario').' AND nivel="'._N_agente_us.'" AND h.ID_aplicacion='.$ID_aplicacion);
+        $rNotificaciones = db_consultar($cNotificaciones);
+
+        $mensaje = '
+        <p><b>'._F_usuario_cache('nombre').'</b> ha ingresado una nueva nota en una aplicación:</p>
+        <p><b>'.$nota.'</b></p>
+        <p><a href="'.PROY_URL.'aplicaciones?ver='.$ID_aplicacion.'">Ir a la aplicación</a></p>
+        <hr />
+        <p>
+        <small>
+        Ud. ha recibido esta notificación por una de las siguientes causas:
+        <ul>
+        <li>Ud. es el agente que lleva el caso</li>
+        <li>Ud. ha comentando en esta aplicación</li>
+        </ul>
+        <hr />
+        <span style="color:#F00;">
+        NO RESPONDA A ESTE CORREO, LOS CORREOS ENVIADOS A '.htmlentities(PROY_MAIL_POSTMASTER).' NO SON REVISADOS.<br />
+        En su lugar puede comentar en la aplicación mencionada.
+        </span>
+        </small>
+        </p>
+        ';
+        while (mysql_num_rows($rNotificaciones) && $f = mysql_fetch_assoc($rNotificaciones))
+        {
+            correoSMTP($f['correo'],'#'.microtime(true). ' - Nueva nota de '._F_usuario_cache('nombre'),$mensaje);
+        }
+        correoSMTP('staff@ufsonline.net','#'.microtime(true). ' - Nueva nota de '._F_usuario_cache('nombre'),$mensaje);
+    }
+}
+
+if (isset($_GET['instrucciones']))
+{
+    require_once('php/_aplicaciones_introduccion.php');
+    return;
+}
 
 if (isset($_POST['ID_prospecto']) && isset($_POST['ID_aplicacion'])):
 
@@ -23,7 +67,7 @@ if (isset($_POST['alertar_agente_us']))
     if ($correo)
     {
         $nota = 'Se ha enviado una notificación al agente US sobre este caso';
-        db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+        aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
         $mensaje='<p>Por favor revisar la siguiente aplicación:<br /><a href="'.PROY_URL.'aplicaciones?a='.$_POST['ID_aplicacion'].'">ir a aplicación</a></p><p>Es posible que tenga nuevas notas anexas o que un administrador solicite tu atención sobre esta aplicación</p>';
         correoSMTP($correo,'#'.time().' - Atención sobre aplicación con ID. '.$_POST['ID_aplicacion'],$mensaje,true);
         echo jQuery('alert("Alerta enviada exitosamente a '.$correo.'.");');
@@ -58,52 +102,73 @@ if (isset($_POST['asignar']))
 {
     // FIXME: atomizar
     $test = db_obtener(db_prefijo.'prospectos_aplicados','ID_agente_us','ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
-    if (!$test)
+    if ($test)
     {
-        $nota = 'El agente le dará seguimiento a este prospecto';
+        echo jQuery('alert("Lo siento, alguien mas tomó esta aplicación antes que tu.");');
+    } else {
         db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('ID_agente_us' => _F_usuario_cache('ID_usuario'), 'fecha_aceptada' => mysql_datetime()),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
-        db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+
+        $nota = 'El agente le dará seguimiento a este prospecto';
+        aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
+
+        echo jQuery('alert("Ud. llevará el caso de la aplicación con ID #'.$_POST['ID_aplicacion'].'.");');
     }
 }
 
+if (isset($_POST['aplicacion_resignada']))
+{
+    db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('ID_agente_us' => 0, 'fecha_aceptada' => mysql_datetime()),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
+
+    $nota = 'El agente US <b>'._F_usuario_cache('nombre').'</b> se ha resignado con esta aplicación.';
+    aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
+
+}
 if (isset($_POST['aplicacion_valida']))
 {
-    $nota = 'La aplicación se ha considerado como válida. **POSIBLE NEGOCIO**';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'valida'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
-    db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+
+    $nota = 'La aplicación se ha considerado como válida. **POSIBLE NEGOCIO**';
+    aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
+
     //...y falsificamos una nota anexa si hay algo escrito
-    if (!empty($_POST['notas']))
-        $_POST['anexar_nota'] = true;
+    $_POST['anexar_nota'] = true;
+
+    echo jQuery('alert("Aplicación #'.$_POST['ID_aplicacion'].' se ha marcado como VÁLIDA.");');
 }
 
 if (isset($_POST['aplicacion_invalida']))
 {
-    $nota = 'La aplicación se ha considerado como **INVALIDA**';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'invalida'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
-    db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+
+    $nota = 'La aplicación se ha considerado como **INVALIDA**';
+    aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
+
     //...y falsificamos una nota anexa si hay algo escrito
-    if (!empty($_POST['notas']))
-        $_POST['anexar_nota'] = true;
+    $_POST['anexar_nota'] = true;
+
+    echo jQuery('alert("Aplicación #'.$_POST['ID_aplicacion'].' se ha marcado como INVÁLIDA.");');
 }
 
 if (isset($_POST['aplicacion_imposible']))
 {
-    $nota = 'La aplicación se ha considerado como **IMPOSIBLE** - El prospecto no califica para nuestros servicios';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'imposible'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
-    db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+
+    $nota = 'La aplicación se ha considerado como **IMPOSIBLE** - El prospecto no califica para nuestros servicios';
+    aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
+
     //...y falsificamos una nota anexa si hay algo escrito
-    if (!empty($_POST['notas']))
-        $_POST['anexar_nota'] = true;
+    $_POST['anexar_nota'] = true;
 }
 
 if (isset($_POST['aplicacion_vendida']))
 {
-    $nota = '**La aplicación se ha vendido**';
     db_actualizar_datos(db_prefijo.'prospectos_aplicados',array('aplicacion_valida' => 'vendida'),'ID_aplicacion="'.db_codex($_POST['ID_aplicacion']).'" AND ID_prospecto="'.db_codex($_POST['ID_prospecto']).'"');
-    db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+
+    $nota = '**La aplicación se ha vendido**';
+    aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
+
     //...y falsificamos una nota anexa si hay algo escrito
-    if (!empty($_POST['notas']))
-        $_POST['anexar_nota'] = true;
+    $_POST['anexar_nota'] = true;
 }
 
 if (isset($_POST['vigilar']))
@@ -133,20 +198,21 @@ if (isset($_POST['asignar_agente']) && isset($_POST['ID_agente_us']))
 if (isset($_POST['recordatorio']) && isset($_POST['notas']))
 {
     $fecha = date('Y-m-d',strtotime(str_replace('/', '-', $_POST['fecha']))).' '.$_POST['hora'];
-    $nota = "Recordatorio establecido para $fecha";
 
     db_agregar_datos(db_prefijo.'prospectos_aplicados_recordatorio',array('ID_usuario' => _F_usuario_cache('ID_usuario'),'ID_aplicacion' => $_POST['ID_aplicacion'], 'fecha' => $fecha, 'nota' => $_POST['notas']));
+
     // Un historial para decir que puso un recordatorio
-    db_agregar_datos(db_prefijo.'historial',array('tipo' => _T_historial_sistema, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+    $nota = "Recordatorio establecido para $fecha";
+    aplicacion_ingresar_nota($_POST['ID_aplicacion'],$nota,_T_historial_sistema);
 
     //...y falsificamos una nota anexa si hay algo escrito
-    if (!empty($_POST['notas']))
-        $_POST['anexar_nota'] = true;
+    $_POST['anexar_nota'] = true;
 }
 
 if (isset($_POST['anexar_nota']) && !empty($_POST['notas']))
 {
-    db_agregar_datos(db_prefijo.'historial',array('fecha' => mysql_datetime(), 'cambio' => $_POST['notas'], 'ID_aplicacion' => $_POST['ID_aplicacion'], 'ID_usuario' => _F_usuario_cache('ID_usuario')));
+    aplicacion_ingresar_nota($_POST['ID_aplicacion'],$_POST['notas'],_T_historial_comentario);
+    echo jQuery('alert("Se anexó correctamente la nota a la aplicación con ID #'.$_POST['ID_aplicacion'].'.");');
 }
 
 endif; // IF ID_prospecto+ID_aplicacion
@@ -176,23 +242,35 @@ if(isset($_GET['a']) && isset($_GET['r']))
     return;
 }
 
+if(isset($_GET['positivas']))
+    $WHERE .= sprintf(' AND (aplicacion_valida="desconocido" OR aplicacion_valida="valida" OR aplicacion_valida="vendida")');
+
 if(isset($_GET['asv']))
-    $WHERE = sprintf('AND ID_agente_sv="%s"', db_codex($_GET['asv']));
+    $WHERE .= sprintf(' AND ID_agente_sv="%s"', db_codex($_GET['asv']));
 
 if(isset($_GET['aus']))
-    $WHERE = sprintf('AND ID_agente_us="%s"', db_codex($_GET['aus']));
+    $WHERE .= sprintf(' AND ID_agente_us="%s"', db_codex($_GET['aus']));
 
 if(isset($_GET['asignadas']))
-    $WHERE = sprintf('AND ID_agente_us="%s"', _F_usuario_cache('ID_usuario'));
+    $WHERE .= sprintf(' AND ID_agente_us="%s"', _F_usuario_cache('ID_usuario'));
 
 if(isset($_GET['vigiladas']))
     $WHERE = 'AND pav.ID';
 
 if(isset($_GET['desactualizadas']))
-    $WHERE .= ' AND aplicacion_valida="desconocido" AND fecha_ingresada < (DATE(NOW()) - INTERVAL 3 DAY) AND pa.ID_aplicacion NOT IN (SELECT h.ID_aplicacion FROM '.db_prefijo.'historial AS h WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) )';
+    $WHERE .= ' AND aplicacion_valida="desconocido" AND fecha_ingresada < (DATE(NOW()) - INTERVAL 3 DAY) AND pa.ID_aplicacion NOT IN (SELECT h.ID_aplicacion FROM '.db_prefijo.'historial AS h LEFT JOIN '.db_prefijo.'usuarios USING (ID_usuario) WHERE fecha > (DATE(NOW()) - INTERVAL 3 DAY) AND nivel="'._N_agente_us.'" )';
 
 if(isset($_GET['validas']))
     $WHERE .= ' AND aplicacion_valida="valida"';
+
+if(isset($_GET['invalidas']))
+    $WHERE .= ' AND aplicacion_valida="invalida"';
+
+if(isset($_GET['esperando']))
+    $WHERE .= ' AND aplicacion_valida="desconocido"';
+
+if(isset($_GET['vendidas']))
+    $WHERE .= ' AND aplicacion_valida="vendida"';
 
 if(isset($_GET['cerradas']))
     $WHERE = 'AND fecha_cerrada';
@@ -205,6 +283,9 @@ if(isset($_GET['fecha_ingresada']))
 
 if (isset($_GET['grupo']))
     $WHERE .= sprintf(' AND ID_agente_sv IN (SELECT ID_usuario FROM '.db_prefijo.'usuarios WHERE ID_supervisor=(SELECT ID_supervisor FROM '.db_prefijo.'supervisores WHERE ID_usuario=%s)) ', _F_usuario_cache('ID_usuario'));
+
+if (isset($_GET['supervisor']))
+    $WHERE .= sprintf(' AND ID_agente_sv IN (SELECT ID_usuario FROM '.db_prefijo.'usuarios WHERE ID_supervisor='.$_GET['supervisor'].') ', _F_usuario_cache('ID_usuario'));
 
 switch (_F_usuario_cache('nivel'))
 {
@@ -230,27 +311,18 @@ switch (_F_usuario_cache('nivel'))
 $c = 'SELECT `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`,  `especial5`, `especial6`, `especial7`, pa.`ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT local FROM '.db_prefijo.'supervisores WHERE ID_supervisor = (SELECT ID_supervisor FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`)) AS grupo, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, DATE_FORMAT(`fecha_ingresada`,"%e-%b-%Y<br />%r") AS "fecha_ingresada_formato", DATE_FORMAT(`fecha_aceptada`,"%e-%b-%Y<br />%r") AS "fecha_aceptada", DATE_FORMAT(`fecha_cerrada`,"%e-%b-%Y<br />%r") AS "fecha_cerrada", `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, IF(pav.`ID`, "si", "no") AS "vigilado", pa.`aplicacion_valida`, pa.`bono_agente_sv`, p.`tipo` FROM ('.db_prefijo.'prospectos_aplicados AS pa LEFT JOIN '.db_prefijo.'prospectos_aplicados_vigilados AS pav ON pav.ID_usuario='._F_usuario_cache('ID_usuario').' AND pav.`ID_aplicacion`=pa.`ID_aplicacion`) LEFT JOIN '.db_prefijo.'prospectos AS p USING (ID_prospecto) WHERE 1 '.$WHERE.' ORDER BY `fecha_ingresada` ASC';
 $r = db_consultar($c);
 
+if (!mysql_num_rows($r) && isset($_GET['correo'])) {
+    echo '<p style="font-size:1.1em;color:#00F;">Lo siento, alguien mas ha tomado ya esta aplicación.</p>';
+    return;
+} elseif (!mysql_num_rows($r)) {
+    echo '<p>No se encontraron aplicaciones que coincidieran con el filtro de búsqueda especificado.</p>';
+}
+
 if (isset($_POST['lote']))
     enviar_lote($r);
 
 while($f = mysql_fetch_assoc($r))
 {
-    switch (_F_usuario_cache('nivel'))
-    {
-        case _N_agente_sv:
-            $comision = $f['comision_agente_sv'];
-            break;
-        case _N_agente_sv:
-            $comision = $f['comision_agente_us'];
-            break;
-        case _N_agente_sv:
-            $comision = $f['comision_ufs_sv'];
-            break;
-        case _N_administrador_us:
-            $comision = $f['comision_ufs_us'];
-            break;
-    }
-
     // Obtener todo el historial para este aplicación
     $bHistorial = '';
     $cHistorial = 'SELECT DATE_FORMAT(fecha,"%e-%b-%Y<br />%r") AS "fecha_formato", ID_usuario,  nombre, cambio, tipo, nivel FROM '.db_prefijo.'historial LEFT JOIN '.db_prefijo.'usuarios USING (ID_usuario) WHERE ID_aplicacion="'.$f['ID_aplicacion'].'" ORDER BY `fecha` ASC';
@@ -268,7 +340,6 @@ while($f = mysql_fetch_assoc($r))
         $bHistorial .= '</table>';
     }
 
-    $total += $comision;
     $i++;
 
     switch ($f['aplicacion_valida'])
@@ -291,9 +362,9 @@ while($f = mysql_fetch_assoc($r))
 
     // Formateemos el telefono segun locale
     if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_us,_N_agente_us,_N_agente_us_solo)))
-        $f['telefono'] = preg_replace(array('/[^\d]/','/^(\d{3})(\d{7})$/'),array('','$1-$2-$3'),$f['telefono']);
+        $f['telefono'] = preg_replace(array('/[^\d]/','/^(\d{3})(\d{3})(\d{4})$/'),array('','$1-$2-$3'),$f['telefono']);
     else
-        $f['telefono'] = preg_replace(array('/[^\d]/','/^(\d{10})$/','/^(\d{1})(\d{3})(\d{7})$/'),array('','1$1','$1-$2-$3'),$f['telefono']);
+        $f['telefono'] = preg_replace(array('/[^\d]/','/^(\d{10})$/','/^(\d{1})(\d{3})(\d{3})(\d{4})$/'),array('','1$1','$1-$2-$3-$4'),$f['telefono']);
 
     $datos = '
     <table class="tabla-estandar '.$clase_aplicacion.'">
@@ -346,7 +417,7 @@ while($f = mysql_fetch_assoc($r))
     ';
 
     $buffer .= '<hr style="border:1px dotted #F00;"/>';
-    $buffer .= '<form action="'.PROY_URL_ACTUAL_DINAMICA.'" method="post"><div class="unit">';
+    $buffer .= '<form action="'.PROY_URL_ACTUAL_DINAMICA.'#a'.$f['ID_aplicacion'].'" method="post"><div class="unit">';
     $buffer .= '
     <input name="ID_aplicacion" value="'.$f['ID_aplicacion'].'" type="hidden"/>
     <input name="ID_prospecto" value="'.$f['ID_prospecto'].'" type="hidden"/>
@@ -363,7 +434,7 @@ while($f = mysql_fetch_assoc($r))
 
     if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
     $mini_aplicacion = '<a target="_blank" href="'.PROY_URL.'aplicaciones_miniapp?p='.$f['ID_prospecto'].'&a='.$f['ID_aplicacion'].'">Ver aplicación preliminar</a>';
-    $buffer .= '<div class="mini">#'.$i.' - ID de aplicación: '.$f['ID_aplicacion'].' - ID de prospecto: '.$f['ID_prospecto'] . '<div style="float:right;">' . $vigilar .'&nbsp;' . $mini_aplicacion . '</div></div>';
+    $buffer .= '<div class="mini">Enlace permanente a esta aplicación: <a name="a'.$f['ID_aplicacion'].'" id="a'.$f['ID_aplicacion'].'" href="'.PROY_URL_ACTUAL.'?ver='.$f['ID_aplicacion'].'">ID de aplicación: '.$f['ID_aplicacion'].'</a> - ID de prospecto: '.$f['ID_prospecto'] . '<div style="float:right;">' . $vigilar .'&nbsp;' . $mini_aplicacion . '</div></div>';
     endif;
     $buffer .= $datos;
     if (_F_usuario_cache('nivel') == _N_administrador_sv && $f['enviado'] == "0000-00-00 00:00:00" && empty($_GET['export']))
@@ -384,7 +455,7 @@ while($f = mysql_fetch_assoc($r))
         {
             $buffer .= '<div style="background-color:#EEE;font-size:0.8em;text-align:center;">Anexar nota a esta aplicación</div>
             <textarea name="notas" style="width:99%;margin:auto;display:block"></textarea>
-            <input type="submit" name="anexar_nota" value="Anexar Nota" /> - o - <input type="submit" name="recordatorio" value="Anexar nota y establecer recordatorio" /> <span class="mini">Fecha:</span> <input name="fecha" class="datepicker" type="text" value="'.date('d/m/Y').'" /> <span class="mini">Hora:</span> <select name="hora"><option value="09:00:00">9:00a.m.</option><option value="09:30:00">09:30a.m.</option><option value="10:00:00">10:00a.m.</option><option value="10:30:00">10:30a.m.</option><option value="11:00:00">11:00a.m.</option><option value="11:30:00">11:30a.m.</option><option value="12:00:00">12:00p.m.</option><option value="12:30:00">12:30p.m.</option><option value="13:00:00" selected="selected">1:00p.m.</option><option value="13:30:00">1:30p.m.</option><option value="14:00:00">2:00p.m.</option><option value="14:30:00">2:30p.m.</option><option value="15:00:00">3:00p.m.</option><option value="15:30:00">3:30p.m.</option><option value="16:00:00">4:00p.m.</option><option value="16:30:00">4:30p.m.</option><option value="17:00:00">5:00p.m.</option><option value="17:30:00">5:30p.m.</option><option value="18:00:00">6:00p.m.</option><option value="18:30:00">6:30p.m.</option><option value="19:00:00">7:00p.m.</option></select>';
+            <input type="submit" name="anexar_nota" value="Anexar Nota" /> - o - <input type="submit" name="recordatorio" value="Anexar nota y establecer recordatorio" /> <span class="mini">Fecha:</span> <input name="fecha" class="datepicker" type="text" value="'.date('d/m/Y').'" /> <span class="mini">Hora:</span> <select name="hora"><option value="09:00:00">9:00a.m.</option><option value="09:30:00">09:30a.m.</option><option value="10:00:00">10:00a.m.</option><option value="10:30:00">10:30a.m.</option><option value="11:00:00">11:00a.m.</option><option value="11:30:00">11:30a.m.</option><option value="12:00:00">12:00p.m.</option><option value="12:30:00">12:30p.m.</option><option value="13:00:00" selected="selected">1:00p.m.</option><option value="13:30:00">1:30p.m.</option><option value="14:00:00">2:00p.m.</option><option value="14:30:00">2:30p.m.</option><option value="15:00:00">3:00p.m.</option><option value="15:30:00">3:30p.m.</option><option value="16:00:00">4:00p.m.</option><option value="16:30:00">4:30p.m.</option><option value="17:00:00">5:00p.m.</option><option value="17:30:00">5:30p.m.</option><option value="18:00:00">6:00p.m.</option><option value="18:30:00">6:30p.m.</option><option value="19:00:00">7:00p.m.</option><option value="19:30:00">7:30p.m.</option><option value="20:00:00">8:00p.m.</option><option value="20:30:00">8:30p.m.</option><option value="21:00:00">9:00p.m.</option></select>';
 
             if (!isset($_GET['aplicaciones_mostrar_incrustada']) && in_array(_F_usuario_cache('nivel'), array(_N_agente_us,_N_administrador_sv,_N_administrador_us)))
             {
@@ -393,6 +464,11 @@ while($f = mysql_fetch_assoc($r))
                 $buffer .= '<input type="submit" name="aplicacion_invalida" value="Marcar como aplicación **NO** válida" title="Se logró hablar con el prospecto pero fue una aplicación no productiva o la información ingresada por el agente no es correcta" />';
                 $buffer .= '<input type="submit" name="aplicacion_imposible" value="El prospecto no califica para nuestro servicio" title="La aplicación es válida pero el prospecto no califica para nuestros servicios" />';
                 $buffer .= '<input type="submit" name="aplicacion_vendida" value="Se logro realizar la venta" title="La venta de algun producto se realizó" />';
+                if (in_array(_F_usuario_cache('nivel'), array(_N_agente_us,_N_agente_us_solo)))
+                {
+                    $buffer .= '<br />';
+                    $buffer .= '<input type="submit" name="aplicacion_resignada" value="Resignar aplicación" title="HAN LLAMADO 4-5 VECES A UN PROSPECTO ENVIADO DE E.S. Y NO HAN TENIDO EXITO EN CONTACTARSE CON LA PERSONA INDICADA"/>';
+                }
             }
         }
 
@@ -442,11 +518,10 @@ if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
 echo "<h1>".PROY_NOMBRE_CORTO." - historial de aplicaciones</h1>";
 echo '<table id="tabla-ventas" class="tabla-estandar">';
 echo '<tr>
-<th>Monto ($)</th>
-<th>Aplicaciones [#]</th>
+<th>Cantidad de aplicaciones</th>
 <th>Aplicaciones [fecha ingresada<acronym title="Fecha en que la aplicación fue ingresada al sistema">*</acronym>]</th>
 <th>Aplicaciones [rango de fechas]</th></tr>';
-echo sprintf('<tr><td>$%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $total. ' [~$'.number_format($total/max(mysql_num_rows($r),1),2,'.',',').']', mysql_num_rows($r),'<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
+echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td></tr>', mysql_num_rows($r),'<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
 echo '</table>';
 endif;
 
