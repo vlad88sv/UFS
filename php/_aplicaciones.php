@@ -443,7 +443,7 @@ while($f = mysql_fetch_assoc($r))
 
     if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
     $mini_aplicacion = '<a target="_blank" href="'.PROY_URL.'aplicaciones_miniapp?p='.$f['ID_prospecto'].'&a='.$f['ID_aplicacion'].'">Ver aplicación preliminar</a>';
-    $buffer .= '<div class="mini">Enlace permanente a esta aplicación: <a name="a'.$f['ID_aplicacion'].'" id="a'.$f['ID_aplicacion'].'" href="'.PROY_URL_ACTUAL.'?ver='.$f['ID_aplicacion'].'">ID de aplicación: '.$f['ID_aplicacion'].'</a> - ID de prospecto: '.$f['ID_prospecto'] . '<div style="float:right;">' . $vigilar .'&nbsp;' . $mini_aplicacion . '</div></div>';
+    $buffer .= '<div class="mini">Enlace permanente a esta aplicación: <a name="a'.$f['ID_aplicacion'].'" id="a'.$f['ID_aplicacion'].'" href="'.PROY_URL_ACTUAL.'?ver='.$f['ID_aplicacion'].'">ID de aplicación: '.$f['ID_aplicacion'].'</a> - <a href="'.PROY_URL.'prospectos?p='.$f['ID_prospecto'].'">ID de prospecto: ' . $f['ID_prospecto'] . '</a><div style="float:right;">' . $vigilar .'&nbsp;' . $mini_aplicacion . '</div></div>';
     endif;
     $buffer .= $datos;
     if (_F_usuario_cache('nivel') == _N_administrador_sv && $f['enviado'] == "0000-00-00 00:00:00" && empty($_GET['export']))
@@ -553,12 +553,13 @@ for($i=0;$i<$nAplicaciones;$i++)
 if ($nAplicaciones > 1 && $_GET['l'] < $nAplicaciones-1)
     $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']+1).'">≫</a>';
 
-if (mysql_num_rows($r))
+if ($nAplicaciones>1)
     echo '<p class="medio-oculto">Páginas:'.$selector.'</p>';
-
+/*
 if (_F_usuario_cache('nivel') == _N_administrador_sv && empty($_GET['export']) && !isset($_GET['aplicaciones_mostrar_incrustada']))
 {
     echo '<hr />';
     echo '<form action="'.PROY_URL_ACTUAL_DINAMICA.'" method="post"><input type="submit" name="lote" value="Enviar todo lo visible a mi correo" /></form>';
 }
+*/
 ?>
