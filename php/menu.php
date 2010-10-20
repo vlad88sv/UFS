@@ -26,21 +26,7 @@ if (S_iniciado())
         <?php if (in_array(_F_usuario_cache('nivel'), array(_N_agente_sv,_N_agente_us_solo,_N_agente_us))):?>
             <li class="dir"><a href="<?php echo PROY_URL; ?>prospecto" title="">Prospecto</a></li>
         <?php endif; ?>
-        <li class="dir"><a href="<?php echo PROY_URL; ?>aplicaciones?instrucciones" title="">Aplicaciones</a>
-        <ul>
-        <li><a href="<?php echo PROY_URL; ?>aplicaciones_positivas" title="">Positivas</a></li>
-        <?php if (in_array(_F_usuario_cache('nivel'), array(_N_administrador_sv,_N_administrador_us))):?>
-            <li><a href="<?php echo PROY_URL; ?>aplicaciones_grupo?fecha_ingresada=now" title="">Solo de mi grupo</a></li>
-            <li><a href="<?php echo PROY_URL; ?>aplicaciones_vigiladas" title="">Vigiladas</a></li>
-        <?php endif; ?>
-        <li><a href="<?php echo PROY_URL; ?>aplicaciones_desactualizadas" title="">Desactualizadas</a></li>
-        <li><a href="<?php echo PROY_URL; ?>aplicaciones_pendientes" title="">Sin tomar (libres)</a></li>
-        <li><a href="<?php echo PROY_URL; ?>aplicaciones_esperando" title="">Sin procesar</a></li>
-        <li><a href="<?php echo PROY_URL; ?>aplicaciones_validas?fecha_inicio=-3 day&fecha_final=now" title="">Válidas</a></li>
-        <li><a href="<?php echo PROY_URL; ?>aplicaciones_invalidas?fecha_inicio=-3 day&fecha_final=now" title="">Inválidas</a></li>
-        <li><a href="<?php echo PROY_URL; ?>aplicaciones_vendidas?fecha_inicio=-3 day&fecha_final=now" title="">Vendidas</a></li>
-        </ul>
-        </li>
+        <li class="dir"><a href="<?php echo PROY_URL; ?>aplicaciones?instrucciones" title="">Aplicaciones</a></li>
 
     <?php endif; ?>
 

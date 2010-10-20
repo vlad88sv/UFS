@@ -17,5 +17,4 @@
     <li><a href="<?php echo PROY_URL; ?>aplicaciones_vigiladas" title="">Vigiladas</a></li>
 </ul>
 <?php endif; ?>
-<p class="medio-oculto">Debe seleccionar una opción para continuar.</p>
-<p class="medio-oculto">Tip: ¡Recuerda que puedes acceder a todas ellas mantiendo el puntero de tu mouse sobre el menú <b>Aplicaciones</b> y seleccionando la opción correspondiente en la lista desplegable!.</p>
+<p class="medio-oculto">NOTA: Debe seleccionar una opción para continuar.</p>
