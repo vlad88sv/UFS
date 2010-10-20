@@ -10,6 +10,10 @@ $arrCSS[] = 'css/jquery-ui/jquery-ui-1.8.4.custom';
 $arrJS[] = 'jquery.ui.core';
 $arrJS[] = 'jquery.ui.datepicker';
 
+/** Para selector (paginador) **/
+$sufijo = (strstr(PROY_URL_ACTUAL_DINAMICA,'?')) ? '&' : '?';
+$URL = preg_replace('/&?l=[0-9]*&?/','',PROY_URL_ACTUAL_DINAMICA);
+
 function aplicacion_ingresar_nota($ID_aplicacion,$nota,$tipo_nota,$notificar=true)
 {
     db_agregar_datos(db_prefijo.'historial',array('tipo' => $tipo_nota, 'fecha' => mysql_datetime(), 'cambio' => $nota, 'ID_aplicacion' => $ID_aplicacion, 'ID_usuario' => _F_usuario_cache('ID_usuario')));
@@ -527,22 +531,27 @@ if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
 echo "<h1>".PROY_NOMBRE_CORTO." - historial de aplicaciones</h1>";
 echo '<table id="tabla-ventas" class="tabla-estandar">';
 echo '<tr>
+<th>Aplicaciones encontradas</th>
 <th>Aplicaciones ingresadas en</th>
 <th>Aplicaciones ingresada en rango de fecha</th></tr>';
-echo sprintf('<tr><td>%s</td><td>%s</td></tr>', '<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
+echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td></tr>', $nAplicaciones, '<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
 echo '</table>';
 endif;
+
+$selector = '';
+if ($nAplicaciones > 1 && $_GET['l'] > 0)
+    $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']-1).'">Aplicación anterior</a> |';
+
+if ($nAplicaciones > 1 && $_GET['l'] < $nAplicaciones-1)
+    $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']+1).'">Aplicación siguiente</a>';
+
+if ($nAplicaciones>1)
+    echo '<p class="medio-oculto">Páginas:'.$selector.'</p>';
 
 echo $buffer;
 
 $selector = '';
 
-if (!strstr(PROY_URL_ACTUAL_DINAMICA,'?'))
-    $sufijo = '?';
-else
-    $sufijo = '&';
-
-$URL = preg_replace('/&?l=[0-9]*&?/','',PROY_URL_ACTUAL_DINAMICA);
 
 if ($nAplicaciones > 1 && $_GET['l'] > 0)
     $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']-1).'">≪</a>';
