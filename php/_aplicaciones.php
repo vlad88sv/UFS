@@ -1,6 +1,7 @@
 <script type="text/javascript">
 $(function($) {
     $(".datepicker").datepicker({ dateFormat: 'dd/mm/yy' });
+    $("input[type=submit]").click($(this).disabled=true;return true);
 });
 </script>
 <?php
@@ -315,7 +316,13 @@ switch (_F_usuario_cache('nivel'))
 if (!isset($_GET['l']) || !is_numeric($_GET['l']))
     $_GET['l'] = 0;
 
-$LIMIT = 'LIMIT '.$_GET['l'].',1';
+if (isset($_GET['usar_paginador']))
+    $_SESSION['aplicacion_usar_paginador'] = true;
+
+if (isset($_SESSION['aplicacion_usar_paginador']))
+    $LIMIT = 'LIMIT '.$_GET['l'].',1';
+else
+    $LIMIT = '';
 
 $c = 'SELECT SQL_CALC_FOUND_ROWS `ID_prospecto`, `situacion`, `ultima_presentacion`, `intentos`, `apellido`, `nombre`, `direccion2`, `ciudad`, `estado`, `zip`, `telefono`, `especial2`, `especial3`,  `especial5`, `especial6`, `especial7`, pa.`ID_aplicacion`, `ID_agente_sv`, `ID_agente_us`, `enviado`, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`) AS nombre_agente_sv, (SELECT local FROM '.db_prefijo.'supervisores WHERE ID_supervisor = (SELECT ID_supervisor FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_sv`)) AS grupo, (SELECT nombre FROM '.db_prefijo.'usuarios WHERE ID_usuario = `ID_agente_us`) AS nombre_agente_us, DATE_FORMAT(`fecha_ingresada`,"%e-%b-%Y<br />%r") AS "fecha_ingresada_formato", DATE_FORMAT(`fecha_aceptada`,"%e-%b-%Y<br />%r") AS "fecha_aceptada", DATE_FORMAT(`fecha_cerrada`,"%e-%b-%Y<br />%r") AS "fecha_cerrada", `comision_agente_sv`, `comision_agente_us`, `comsion_ufs_sv`, `comision_ufs_us`, `notas`, `interes`, IF(pav.`ID`, "si", "no") AS "vigilado", pa.`aplicacion_valida`, pa.`bono_agente_sv`, p.`tipo` FROM ('.db_prefijo.'prospectos_aplicados AS pa LEFT JOIN '.db_prefijo.'prospectos_aplicados_vigilados AS pav ON pav.ID_usuario='._F_usuario_cache('ID_usuario').' AND pav.`ID_aplicacion`=pa.`ID_aplicacion`) LEFT JOIN '.db_prefijo.'prospectos AS p USING (ID_prospecto) WHERE 1 '.$WHERE.' ORDER BY `fecha_ingresada` ASC '.$LIMIT;
 $r = db_consultar($c);
@@ -531,13 +538,15 @@ if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
 echo "<h1>".PROY_NOMBRE_CORTO." - historial de aplicaciones</h1>";
 echo '<table id="tabla-ventas" class="tabla-estandar">';
 echo '<tr>
-<th>Aplicaciones encontradas</th>
-<th>Aplicaciones ingresadas en</th>
-<th>Aplicaciones ingresada en rango de fecha</th></tr>';
-echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td></tr>', $nAplicaciones, '<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
+<th>Opciones</th>
+<th>Cantidad</th>
+<th>Ingresadas en</th>
+<th>Ingresada en rango</th></tr>';
+echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', '<a href="'.$URL.$sufijo.'usar_paginador">Modo páginas</a>',$nAplicaciones, '<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
 echo '</table>';
 endif;
 
+if (isset($_SESSION['aplicacion_usar_paginador'])):
 $selector = '';
 if ($nAplicaciones > 1 && $_GET['l'] > 0)
     $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']-1).'">Aplicación anterior</a> |';
@@ -547,11 +556,13 @@ if ($nAplicaciones > 1 && $_GET['l'] < $nAplicaciones-1)
 
 if ($nAplicaciones>1)
     echo '<p class="medio-oculto">Páginas:'.$selector.'</p>';
+endif;
 
 echo $buffer;
 
 $selector = '';
 
+if (isset($_SESSION['aplicacion_usar_paginador'])):
 
 if ($nAplicaciones > 1 && $_GET['l'] > 0)
     $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']-1).'">≪</a>';
@@ -564,6 +575,7 @@ if ($nAplicaciones > 1 && $_GET['l'] < $nAplicaciones-1)
 
 if ($nAplicaciones>1)
     echo '<p class="medio-oculto">Páginas:'.$selector.'</p>';
+endif;
 /*
 if (_F_usuario_cache('nivel') == _N_administrador_sv && empty($_GET['export']) && !isset($_GET['aplicaciones_mostrar_incrustada']))
 {
