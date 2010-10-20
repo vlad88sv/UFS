@@ -309,7 +309,7 @@ switch (_F_usuario_cache('nivel'))
 }
 
 if (!isset($_GET['l']) || !is_numeric($_GET['l']))
-    $_GET['l'] = 1;
+    $_GET['l'] = 0;
 
 $LIMIT = 'LIMIT '.$_GET['l'].',1';
 
@@ -527,10 +527,9 @@ if (!isset($_GET['aplicaciones_mostrar_incrustada'])):
 echo "<h1>".PROY_NOMBRE_CORTO." - historial de aplicaciones</h1>";
 echo '<table id="tabla-ventas" class="tabla-estandar">';
 echo '<tr>
-<th>Cantidad de aplicaciones</th>
-<th>Aplicaciones [fecha ingresada<acronym title="Fecha en que la aplicación fue ingresada al sistema">*</acronym>]</th>
-<th>Aplicaciones [rango de fechas]</th></tr>';
-echo sprintf('<tr><td>%s</td><td>%s</td><td>%s</td></tr>', mysql_num_rows($r),'<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
+<th>Aplicaciones ingresadas en</th>
+<th>Aplicaciones ingresada en rango de fecha</th></tr>';
+echo sprintf('<tr><td>%s</td><td>%s</td></tr>', '<a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-2 day">Anteayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=-1 day">Ayer</a> / <a href="'.PROY_URL_ACTUAL.'?fecha_ingresada=now">Hoy</a> | Otro día: <form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"><input name="fecha_ingresada" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form> | <a href="'.PROY_URL_ACTUAL.'">Todas</a>','<form style="display:inline" method="get" action="'.PROY_URL_ACTUAL.'"> Del <input name="fecha_inicio" type="text" class="datepicker" value="'.date('j/n/Y').'" /> al <input name="fecha_final" type="text" class="datepicker" value="'.date('j/n/Y').'" /><input type="submit" value="Ir" class="ir"/></form>');
 echo '</table>';
 endif;
 
@@ -545,16 +544,17 @@ else
 
 $URL = preg_replace('/&?l=[0-9]*&?/','',PROY_URL_ACTUAL_DINAMICA);
 
-if ($nAplicaciones > 1 && $_GET['l'] > 1)
+if ($nAplicaciones > 1 && $_GET['l'] > 0)
     $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']-1).'">≪</a>';
 
 for($i=0;$i<$nAplicaciones;$i++)
     $selector .= ' <a '.($i == $_GET['l'] ? 'style="font-weight:bolder;"' : '').' href="'.$URL.$sufijo.'l='.$i.'">'.$i.'</a>';
 
-if ($nAplicaciones > 1 && $_GET['l'] < $nAplicaciones)
+if ($nAplicaciones > 1 && $_GET['l'] < $nAplicaciones-1)
     $selector .= ' <a href="'.$URL.$sufijo.'l='.($_GET['l']+1).'">≫</a>';
 
-echo '<p class="medio-oculto">Aplicaciones para el filtro seleccionado:'.$selector.'</p>';
+if (mysql_num_rows($r))
+    echo '<p class="medio-oculto">Páginas:'.$selector.'</p>';
 
 if (_F_usuario_cache('nivel') == _N_administrador_sv && empty($_GET['export']) && !isset($_GET['aplicaciones_mostrar_incrustada']))
 {
